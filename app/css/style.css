@@ -1,0 +1,280 @@
+/* NullHome — minimal dark UI */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:        #0f0f0f;
+    --surface:   #1a1a1a;
+    --surface2:  #252525;
+    --border:    #333;
+    --text:      #e8e8e8;
+    --muted:     #888;
+    --accent:    #4a9eff;
+    --on-color:  #4caf50;
+    --off-color: #555;
+    --danger:    #f44336;
+    --radius:    6px;
+    --transition: 0.15s ease;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ── Layout ──────────────────────────────────────────── */
+
+header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+}
+
+nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+nav button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: var(--transition);
+}
+
+nav button:hover,
+nav button.active {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* ── Sections ────────────────────────────────────────── */
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.section-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* ── Cards ───────────────────────────────────────────── */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    transition: var(--transition);
+}
+
+.card:hover {
+    border-color: #555;
+}
+
+.card .card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.card .card-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+
+.card .card-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+/* ── Toggle button ───────────────────────────────────── */
+
+.toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.toggle-btn.on  { background: var(--on-color);  color: #fff; }
+.toggle-btn.off { background: var(--off-color);  color: var(--text); }
+
+.toggle-btn:hover { opacity: 0.85; }
+
+/* ── Generic buttons ─────────────────────────────────── */
+
+.btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+
+.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+.btn-danger:hover { opacity: 0.85; }
+
+/* ── Forms ───────────────────────────────────────────── */
+
+.form-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.form-group label {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+.form-group input,
+.form-group select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.45rem 0.6rem;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    outline: none;
+    transition: var(--transition);
+    min-width: 140px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--accent);
+}
+
+/* ── State indicator ─────────────────────────────────── */
+
+.state-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--off-color);
+    margin-right: 4px;
+}
+
+.state-dot.on { background: var(--on-color); }
+
+/* ── Brightness slider ───────────────────────────────── */
+
+.brightness-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.brightness-row input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+}
+
+.brightness-row span {
+    font-size: 0.78rem;
+    color: var(--muted);
+    min-width: 30px;
+    text-align: right;
+}
+
+/* ── Empty state ─────────────────────────────────────── */
+
+.empty {
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+/* ── Toast ───────────────────────────────────────────── */
+
+#toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    display: none;
+    z-index: 9999;
+    max-width: 320px;
+}

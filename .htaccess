@@ -1,0 +1,15 @@
+Options -Indexes
+
+# Serve the app frontend from the document root
+DirectoryIndex app/index.php index.php
+
+# Route /api/… requests to the API entry point
+RewriteEngine On
+RewriteBase /
+
+# Serve real files and directories as-is
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rewrite /api/… → /api/index.php
+RewriteRule ^api(/.*)?$ api/index.php [QSA,L]

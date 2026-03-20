@@ -1,0 +1,13 @@
+<?php
+// Copy this file to config.php and fill in your database credentials,
+// or use the browser-based install wizard (load the app with no config.php present).
+
+// Database configuration
+define('DB_HOST',    'localhost');
+define('DB_NAME',    'nullhome');
+define('DB_USER',    'nullhome');
+define('DB_PASS',    'changeme');
+define('DB_CHARSET', 'utf8mb4');
+
+// Application root path
+define('APP_ROOT', __DIR__);

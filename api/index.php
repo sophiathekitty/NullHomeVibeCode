@@ -12,7 +12,17 @@
  */
 
 // Bootstrap
-require_once __DIR__ . '/../config.php';
+$configFile = __DIR__ . '/../config.php';
+if (!file_exists($configFile)) {
+    http_response_code(503);
+    echo json_encode([
+        'success' => false,
+        'data'    => null,
+        'error'   => 'NullHome is not configured yet. Please run the install wizard.',
+    ]);
+    exit;
+}
+require_once $configFile;
 require_once __DIR__ . '/../db/DB.php';
 require_once __DIR__ . '/handlers/ApiHandler.php';
 

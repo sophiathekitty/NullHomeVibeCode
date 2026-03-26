@@ -179,3 +179,25 @@ crontab -e
 ```
 
 Visit `http://<raspberry-pi-ip>/` to open the NullHome dashboard.
+
+---
+
+## Running Tests
+
+Tests use PHPUnit and run against a real MySQL database (`homehub_test`). They
+never touch your production database.
+
+```bash
+# 1. Copy the example config to the test config and edit with your local test DB credentials
+cp config.php.example config.test.php
+# edit config.test.php — set DB_NAME to 'homehub_test' and use a local MySQL user
+
+# 2. Install PHPUnit (dev dependencies only)
+composer install
+
+# 3. Run the test suite
+./vendor/bin/phpunit --testdox
+```
+
+> **Important:** `config.test.php` is gitignored. Never run tests against your
+> real database — always use a dedicated test database (e.g. `homehub_test`).

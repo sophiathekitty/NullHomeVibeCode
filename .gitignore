@@ -1,2 +1,8 @@
 # Generated config — copy config.php.example to config.php and edit as needed
 config.php
+
+# Test config — copy config.php.example to config.test.php and point at a local test DB
+config.test.php
+
+# Composer vendor directory
+vendor/

@@ -7,7 +7,7 @@
 // Add tasks here that should run every 10 minutes.
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../db/DB.php';
+require_once __DIR__ . '/../modules/db/DB.php';
 require_once __DIR__ . '/../models/SettingsModel.php';
 
 $timestamp = date('Y-m-d H:i:s');

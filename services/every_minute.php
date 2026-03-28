@@ -9,7 +9,7 @@
  */
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../db/DB.php';
+require_once __DIR__ . '/../modules/db/DB.php';
 require_once __DIR__ . '/../models/LightsModel.php';
 require_once __DIR__ . '/../controllers/LightsController.php';
 

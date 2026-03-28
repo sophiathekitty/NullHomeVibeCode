@@ -13,8 +13,11 @@ class DatabaseValidationService {
     /** @var array<string,string>  Map of model class name → absolute file path */
     private array $modelFiles;
 
+    /**
+     * Constructor — registers all model class files to be validated.
+     */
     public function __construct() {
-        $modelsDir = dirname(__DIR__) . '/models/';
+        $modelsDir = dirname(dirname(__DIR__)) . '/models/';
         // Add a new entry here whenever a new Model subclass is created.
         $this->modelFiles = [
             'LightsModel'   => $modelsDir . 'LightsModel.php',
@@ -32,7 +35,7 @@ class DatabaseValidationService {
      * }
      */
     public function validate(): array {
-        require_once dirname(__DIR__) . '/models/Model.php';
+        require_once dirname(dirname(__DIR__)) . '/models/Model.php';
 
         $results  = [];
         $anyError = false;

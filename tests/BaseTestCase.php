@@ -32,7 +32,7 @@ abstract class BaseTestCase extends TestCase
         $pdo->exec('CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '`');
 
         // Step 2 — run DatabaseValidationService to create / sync all model tables.
-        require_once APP_ROOT . '/services/DatabaseValidationService.php';
+        require_once APP_ROOT . '/modules/db/DatabaseValidationService.php';
         $service = new DatabaseValidationService();
         $result  = $service->validate();
 

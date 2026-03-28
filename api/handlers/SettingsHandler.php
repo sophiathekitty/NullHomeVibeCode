@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/ApiHandler.php';
 require_once __DIR__ . '/../../models/SettingsModel.php';
-require_once __DIR__ . '/../../db/DB.php';
+require_once __DIR__ . '/../../modules/db/DB.php';
 
 /**
  * SettingsHandler — handles /api/settings/… requests.

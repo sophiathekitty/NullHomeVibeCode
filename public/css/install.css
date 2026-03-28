@@ -1,0 +1,210 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:       #0f0f0f;
+    --surface:  #1a1a1a;
+    --surface2: #252525;
+    --border:   #333;
+    --text:     #e8e8e8;
+    --muted:    #888;
+    --accent:   #4a9eff;
+    --ok:       #4caf50;
+    --warn:     #ff9800;
+    --danger:   #f44336;
+    --radius:   6px;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1rem;
+}
+
+.wizard {
+    width: 100%;
+    max-width: 540px;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 0.875rem;
+    margin-bottom: 1.75rem;
+}
+
+/* ── Status cards ──────────────────────────────────── */
+
+.checks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.65rem 0.9rem;
+    font-size: 0.875rem;
+}
+
+.check-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-ok   { background: var(--ok); }
+.dot-warn { background: var(--warn); }
+.dot-info { background: var(--accent); }
+
+.check-label { color: var(--muted); min-width: 160px; }
+.check-value { color: var(--text); }
+
+/* ── Form ──────────────────────────────────────────── */
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--accent);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+.form-group input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 0.7rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+}
+
+.form-group input:focus { border-color: var(--accent); }
+
+.form-group .hint {
+    font-size: 0.73rem;
+    color: var(--muted);
+}
+
+.btn-install {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.btn-install:hover { opacity: 0.85; }
+
+/* ── Errors ────────────────────────────────────────── */
+
+.errors {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
+}
+
+.errors ul { padding-left: 1.2rem; }
+.errors li { margin-bottom: 0.25rem; color: #ff8a80; }
+
+/* ── Success ───────────────────────────────────────── */
+
+.success-box {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid var(--ok);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.success-box h2 {
+    font-size: 1rem;
+    color: var(--ok);
+    margin-bottom: 0.4rem;
+}
+
+.success-box p { font-size: 0.875rem; color: var(--text); }
+
+.table-results {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+}
+
+.table-results th,
+.table-results td {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.table-results th { color: var(--muted); font-weight: 500; }
+
+.status-ok   { color: var(--ok); }
+.status-err  { color: var(--danger); }
+
+.btn-go {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.55rem 1.1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+
+.btn-go:hover { opacity: 0.85; }

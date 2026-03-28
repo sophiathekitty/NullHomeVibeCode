@@ -6,5 +6,5 @@
  * dedicated test database, then loads the DB layer used by the application.
  */
 require_once __DIR__ . '/../config.test.php';
-require_once APP_ROOT . '/db/DB.php';
+require_once APP_ROOT . '/modules/db/DB.php';
 require_once __DIR__ . '/BaseTestCase.php';

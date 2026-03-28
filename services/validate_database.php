@@ -10,8 +10,8 @@
  */
 
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../db/DB.php';
-require_once __DIR__ . '/DatabaseValidationService.php';
+require_once __DIR__ . '/../modules/db/DB.php';
+require_once __DIR__ . '/../modules/db/DatabaseValidationService.php';
 
 $timestamp = date('Y-m-d H:i:s');
 echo "[validate_database] starting at $timestamp\n";

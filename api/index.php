@@ -23,7 +23,7 @@ if (!file_exists($configFile)) {
     exit;
 }
 require_once $configFile;
-require_once __DIR__ . '/../db/DB.php';
+require_once __DIR__ . '/../modules/db/DB.php';
 require_once __DIR__ . '/handlers/ApiHandler.php';
 
 header('Content-Type: application/json; charset=utf-8');

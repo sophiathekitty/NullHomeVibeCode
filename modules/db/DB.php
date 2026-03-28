@@ -12,7 +12,12 @@
 class DB {
     private static ?PDO $pdo = null;
 
-    /** Return (and lazily create) the shared PDO connection. */
+    /**
+     * Return (and lazily create) the shared PDO connection.
+     *
+     * @return PDO The shared database connection.
+     * @throws PDOException If the connection cannot be established.
+     */
     public static function connection(): PDO {
         if (self::$pdo === null) {
             $dsn = sprintf(
@@ -31,9 +36,10 @@ class DB {
     /**
      * Prepare and execute a parameterised query.
      *
-     * @param  string $sql
-     * @param  array  $params
-     * @return PDOStatement
+     * @param  string $sql    The SQL query string with optional placeholders.
+     * @param  array  $params Positional parameter values to bind.
+     * @return PDOStatement   The executed statement.
+     * @throws PDOException   If the query fails.
      */
     public static function query(string $sql, array $params = []): PDOStatement {
         $stmt = self::connection()->prepare($sql);
@@ -45,7 +51,9 @@ class DB {
      * Sync a model's field definitions against the live database schema.
      * Creates the table if it does not exist; otherwise adds or modifies columns.
      *
-     * @param object $model  An instance of a Model subclass.
+     * @param  object $model An instance of a Model subclass.
+     * @return void
+     * @throws PDOException  If a schema alteration query fails.
      */
     public static function sync(object $model): void {
         $table  = $model->getTable();
@@ -60,6 +68,12 @@ class DB {
 
     // ── private helpers ────────────────────────────────────────────────────
 
+    /**
+     * Check whether a table exists in the current database.
+     *
+     * @param  string $table The table name to check.
+     * @return bool          True if the table exists, false otherwise.
+     */
     private static function tableExists(string $table): bool {
         $stmt = self::query(
             'SELECT COUNT(*) FROM information_schema.tables
@@ -69,6 +83,14 @@ class DB {
         return (int) $stmt->fetchColumn() > 0;
     }
 
+    /**
+     * Create a new table with an auto-increment primary key and the given fields.
+     *
+     * @param  string $table  The table name to create.
+     * @param  array  $fields Ordered list of field definition arrays.
+     * @return void
+     * @throws PDOException   If the CREATE TABLE statement fails.
+     */
     private static function createTable(string $table, array $fields): void {
         $columns = ['`id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY'];
         foreach ($fields as $field) {
@@ -82,6 +104,14 @@ class DB {
         self::connection()->exec($sql);
     }
 
+    /**
+     * Add or modify columns in an existing table to match the field definitions.
+     *
+     * @param  string $table  The table name to alter.
+     * @param  array  $fields Ordered list of field definition arrays.
+     * @return void
+     * @throws PDOException   If an ALTER TABLE statement fails.
+     */
     private static function syncColumns(string $table, array $fields): void {
         $existing = self::existingColumns($table);
         foreach ($fields as $field) {
@@ -102,7 +132,12 @@ class DB {
         }
     }
 
-    /** Returns an associative array of column_name => column_type for a table. */
+    /**
+     * Return an associative array of column_name => column_type for a table.
+     *
+     * @param  string               $table The table name to inspect.
+     * @return array<string,string>        Map of column name to column type.
+     */
     private static function existingColumns(string $table): array {
         $stmt = self::query(
             'SELECT COLUMN_NAME, COLUMN_TYPE FROM information_schema.columns
@@ -116,7 +151,12 @@ class DB {
         return $cols;
     }
 
-    /** Build a SQL column definition string from a field array. */
+    /**
+     * Build a SQL column definition string from a field array.
+     *
+     * @param  array  $field A field definition array with keys: name, type, length, nullable, default.
+     * @return string        The SQL fragment for use in CREATE/ALTER TABLE.
+     */
     private static function columnDef(array $field): string {
         $type    = strtoupper($field['type']);
         $length  = isset($field['length']) && $field['length'] !== null

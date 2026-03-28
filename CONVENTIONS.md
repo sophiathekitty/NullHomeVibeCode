@@ -13,12 +13,13 @@ This document is the authoritative reference for how this project is structured 
 /install      → Install wizard entry point (index.php). Thin shell only — no logic.
 /models       → Database-backed model classes. One class per table.
 /modules      → HTTP-unaware backend logic. Callable from controllers, API handlers, tests, and cron jobs.
+  /db         → Database class, query builder, and model validation (e.g. DatabaseValidationService).
   /devices    → Device drivers: WemoDriver.php, TuyaDriver.php, LightGroupDispatcher.php
   /weather    → External weather API clients: OpenWeatherMap.php, NullHubWeather.php
   /install    → Installer.php — handles config.php and config.test.php file creation
   /hub        → FailoverManager.php, Heartbeat.php
 /views        → PHP template partials. Receive variables only — no logic, no DB calls.
-/services     → Internal services (e.g. validation, query builder).
+/services     → Cron job and bash script entry points (e.g. every_minute.php, reboot.php). Thin shells only — delegate all logic to modules.
 /tests        → PHPUnit test classes.
 /public       → Publicly served static assets (CSS, JS, images).
 ```

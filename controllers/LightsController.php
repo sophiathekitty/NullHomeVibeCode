@@ -34,8 +34,9 @@ class LightsController extends Controller {
         }
         $newState = $light['state'] ? 0 : 1;
         $this->model->update($id, [
-            'state'      => $newState,
-            'updated_at' => date('Y-m-d H:i:s'),
+            'state'             => $newState,
+            'last_state_change' => date('Y-m-d H:i:s'),
+            'updated_at'        => date('Y-m-d H:i:s'),
         ]);
         return $this->model->find($id);
     }
@@ -50,8 +51,9 @@ class LightsController extends Controller {
             return null;
         }
         $this->model->update($id, [
-            'state'      => 1,
-            'updated_at' => date('Y-m-d H:i:s'),
+            'state'             => 1,
+            'last_state_change' => date('Y-m-d H:i:s'),
+            'updated_at'        => date('Y-m-d H:i:s'),
         ]);
         return $this->model->find($id);
     }
@@ -66,8 +68,9 @@ class LightsController extends Controller {
             return null;
         }
         $this->model->update($id, [
-            'state'      => 0,
-            'updated_at' => date('Y-m-d H:i:s'),
+            'state'             => 0,
+            'last_state_change' => date('Y-m-d H:i:s'),
+            'updated_at'        => date('Y-m-d H:i:s'),
         ]);
         return $this->model->find($id);
     }
@@ -92,17 +95,22 @@ class LightsController extends Controller {
     /**
      * Create a new light entry.
      *
-     * @param  string $name
-     * @param  string $location
+     * @param  string      $name    The light's name.
+     * @param  string|null $type    Device type (default 'light').
+     * @param  string|null $subtype Role within a room: lamp, ambient, mood, etc.
+     * @param  int|null    $roomId  FK to rooms.id.
      * @return array  The newly created light row.
      */
-    public function create(string $name, string $location = ''): array {
+    public function create(string $name, ?string $type = 'light', ?string $subtype = null, ?int $roomId = null): array {
         $id = $this->model->insert([
-            'name'       => $name,
-            'location'   => $location ?: null,
-            'state'      => 0,
-            'brightness' => 100,
-            'updated_at' => date('Y-m-d H:i:s'),
+            'name'              => $name,
+            'type'              => $type,
+            'subtype'           => $subtype,
+            'room_id'           => $roomId,
+            'state'             => 0,
+            'brightness'        => 100,
+            'last_state_change' => null,
+            'updated_at'        => date('Y-m-d H:i:s'),
         ]);
         return $this->model->find($id);
     }

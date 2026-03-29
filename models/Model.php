@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/QueryBuilder.php';
+
 /**
  * Model — base class for all data models.
  *
@@ -12,8 +14,29 @@
  *   length   (int|null)     column length / precision, or null when not applicable
  *   nullable (bool)         whether the column allows NULL (default true)
  *   default  (mixed|null)   default value, or null for no default
+ *
+ * Subclasses that use QueryBuilder must also declare:
+ *   protected static string $table = 'table_name';
  */
 abstract class Model {
+    /**
+     * Table name for use with the QueryBuilder.
+     * Subclasses should override this with their actual table name.
+     */
+    protected static string $table = '';
+
+    /**
+     * Return a fresh QueryBuilder scoped to this model's table.
+     *
+     * Uses late static binding so subclasses resolve the correct table name.
+     *
+     * @return QueryBuilder
+     */
+    public static function query(): QueryBuilder
+    {
+        return new QueryBuilder(DB::connection(), static::$table);
+    }
+
     /** Return the table name for this model. */
     abstract public function getTable(): string;
 

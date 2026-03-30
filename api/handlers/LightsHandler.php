@@ -34,13 +34,17 @@ class LightsHandler extends ApiHandler {
                 return;
             }
             if ($method === 'POST') {
-                $name     = trim($body['name'] ?? '');
-                $location = trim($body['location'] ?? '');
+                $name    = trim($body['name'] ?? '');
+                $type    = isset($body['type'])    ? trim($body['type'])    : 'light';
+                $subtype = isset($body['subtype']) ? trim($body['subtype']) : null;
+                $roomId  = isset($body['room_id']) && is_numeric($body['room_id'])
+                    ? (int) $body['room_id']
+                    : null;
                 if ($name === '') {
                     $this->error('name is required');
                     return;
                 }
-                $this->ok($this->controller->create($name, $location));
+                $this->ok($this->controller->create($name, $type ?: 'light', $subtype ?: null, $roomId));
                 return;
             }
             $this->methodNotAllowed();

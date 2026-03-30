@@ -6,3 +6,6 @@ config.test.php
 
 # Composer vendor directory
 vendor/
+
+# PHPUnit result cache
+.phpunit.result.cache

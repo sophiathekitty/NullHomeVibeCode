@@ -55,6 +55,7 @@ $body    = json_decode($rawBody, true) ?? [];
 $handlers = [
     'lights'   => __DIR__ . '/handlers/LightsHandler.php',
     'settings' => __DIR__ . '/handlers/SettingsHandler.php',
+    'rooms'    => __DIR__ . '/handlers/RoomsHandler.php',
 ];
 
 if (!isset($handlers[$resource])) {

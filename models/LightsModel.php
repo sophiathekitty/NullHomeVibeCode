@@ -7,6 +7,8 @@ require_once __DIR__ . '/Model.php';
  * Table: lights
  */
 class LightsModel extends Model {
+    protected static string $table = 'lights';
+
     public function getTable(): string {
         return 'lights';
     }
@@ -21,9 +23,23 @@ class LightsModel extends Model {
                 'default'  => null,
             ],
             [
-                'name'     => 'location',
+                'name'     => 'type',
                 'type'     => 'VARCHAR',
-                'length'   => 100,
+                'length'   => 50,
+                'nullable' => true,
+                'default'  => null,
+            ],
+            [
+                'name'     => 'subtype',
+                'type'     => 'VARCHAR',
+                'length'   => 50,
+                'nullable' => true,
+                'default'  => null,
+            ],
+            [
+                'name'     => 'room_id',
+                'type'     => 'INT UNSIGNED',
+                'length'   => null,
                 'nullable' => true,
                 'default'  => null,
             ],
@@ -40,6 +56,13 @@ class LightsModel extends Model {
                 'length'   => 3,
                 'nullable' => false,
                 'default'  => '100',
+            ],
+            [
+                'name'     => 'last_state_change',
+                'type'     => 'TIMESTAMP',
+                'length'   => null,
+                'nullable' => true,
+                'default'  => null,
             ],
             [
                 'name'     => 'updated_at',

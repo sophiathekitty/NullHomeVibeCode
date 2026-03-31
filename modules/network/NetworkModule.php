@@ -47,6 +47,8 @@ class NetworkModule
         }
 
         // Get the MAC address of the interface that holds this IP.
+        // $ip is already validated as a safe IPv4 string (digits and dots only)
+        // by FILTER_VALIDATE_IP above, so no shell-special characters can exist.
         $macLines = $execFn(
             "ip addr show | grep -B1 'inet " . $ip . "' | grep -oP '(?<=link/ether\\s)[0-9a-f:]{17}'"
         );
@@ -73,6 +75,11 @@ class NetworkModule
 
     /**
      * Derive a /24 CIDR subnet from an IPv4 address by zeroing the last octet.
+     *
+     * Note: This method always uses a /24 prefix length regardless of the
+     * actual subnet mask configured on the interface. This is intentional: the
+     * derived value is used as a scan range for nmap device discovery and a /24
+     * is the expected convention for this application.
      *
      * Example: '192.168.1.50' → '192.168.1.0/24'
      *

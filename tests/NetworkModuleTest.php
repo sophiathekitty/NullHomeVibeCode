@@ -3,7 +3,7 @@ require_once APP_ROOT . '/modules/network/NetworkModule.php';
 require_once APP_ROOT . '/models/SettingsModel.php';
 
 /**
- * NetworkModuleTest — unit and integration tests for NetworkModule::detect().
+ * NetworkModuleTest -- unit and integration tests for NetworkModule::detect().
  *
  * Tests do not shell out to the real system. The exec() call is replaced by
  * an injected callable so tests remain deterministic and portable.

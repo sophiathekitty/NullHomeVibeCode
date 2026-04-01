@@ -116,4 +116,155 @@ class NetworkModuleTest extends BaseTestCase
         $this->assertNull($settings->get('host_mac'));
         $this->assertNull($settings->get('host_subnet'));
     }
+
+    /**
+     * Inject a fake ping sweep with 3 hosts and assert the method returns 3
+     * and calls NmapScan::insertIps() with all 3 IPs.
+     *
+     * @return void
+     */
+    public function testDiscoverIpsReturnsParsedCount(): void
+    {
+        $fakeExec = static function (string $command): array {
+            return [
+                'Host: 192.168.1.1 (router.local)   Status: Up',
+                'Host: 192.168.1.50 ()              Status: Up',
+                'Host: 192.168.1.101 ()             Status: Up',
+            ];
+        };
+
+        $nmapScan = $this->createMock(NmapScan::class);
+        $nmapScan->expects($this->once())
+                 ->method('insertIps')
+                 ->with(['192.168.1.1', '192.168.1.50', '192.168.1.101']);
+
+        $count = NetworkModule::discoverIps($nmapScan, '192.168.1.0/24', $fakeExec);
+
+        $this->assertSame(3, $count);
+    }
+
+    /**
+     * Inject ping sweep output that includes the host's own IP and assert that
+     * IP is excluded from the list passed to insertIps().
+     *
+     * @return void
+     */
+    public function testDiscoverIpsFiltersHostIp(): void
+    {
+        $settings = new SettingsModel();
+        $settings->set('host_ip', '192.168.1.50');
+
+        $fakeExec = static function (string $command): array {
+            return [
+                'Host: 192.168.1.1 ()   Status: Up',
+                'Host: 192.168.1.50 ()  Status: Up',
+                'Host: 192.168.1.101 () Status: Up',
+            ];
+        };
+
+        $nmapScan = $this->createMock(NmapScan::class);
+        $nmapScan->expects($this->once())
+                 ->method('insertIps')
+                 ->with(['192.168.1.1', '192.168.1.101']);
+
+        $count = NetworkModule::discoverIps($nmapScan, '192.168.1.0/24', $fakeExec);
+
+        $this->assertSame(2, $count);
+    }
+
+    /**
+     * Assert that discoverIps() throws a RuntimeException when no subnet is
+     * provided and host_subnet is not set in settings.
+     *
+     * @return void
+     */
+    public function testDiscoverIpsThrowsWhenNoSubnet(): void
+    {
+        $nmapScan = $this->createMock(NmapScan::class);
+        $nmapScan->expects($this->never())->method('insertIps');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Host subnet not configured');
+
+        NetworkModule::discoverIps($nmapScan);
+    }
+
+    /**
+     * Pass an explicit $subnet argument and assert it is used in the exec command
+     * instead of the value stored in settings.
+     *
+     * @return void
+     */
+    public function testDiscoverIpsUsesProvidedSubnet(): void
+    {
+        $settings = new SettingsModel();
+        $settings->set('host_subnet', '10.0.0.0/24');
+
+        $capturedCmd = '';
+        $fakeExec = static function (string $command) use (&$capturedCmd): array {
+            $capturedCmd = $command;
+            return [];
+        };
+
+        $nmapScan = $this->createMock(NmapScan::class);
+
+        NetworkModule::discoverIps($nmapScan, '172.16.0.0/24', $fakeExec);
+
+        $this->assertStringContainsString('172.16.0.0/24', $capturedCmd);
+        $this->assertStringNotContainsString('10.0.0.0/24', $capturedCmd);
+    }
+
+    /**
+     * Inject fake port scan output with ports 49153 and 80 open and assert
+     * getOpenPorts() returns [49153, 80].
+     *
+     * @return void
+     */
+    public function testGetOpenPortsReturnsParsedPorts(): void
+    {
+        $fakeExec = static function (string $command): array {
+            return [
+                'Host: 192.168.1.101 ()  Ports: 49153/open/tcp/////, 80/open/tcp/////',
+            ];
+        };
+
+        $ports = NetworkModule::getOpenPorts('192.168.1.101', $fakeExec);
+
+        $this->assertSame([49153, 80], $ports);
+    }
+
+    /**
+     * Inject empty exec output and assert getOpenPorts() returns an empty array.
+     *
+     * @return void
+     */
+    public function testGetOpenPortsReturnsEmptyOnNoOutput(): void
+    {
+        $fakeExec = static function (string $command): array {
+            return [];
+        };
+
+        $ports = NetworkModule::getOpenPorts('192.168.1.101', $fakeExec);
+
+        $this->assertSame([], $ports);
+    }
+
+    /**
+     * Inject output with a mix of open and closed ports and assert that only
+     * the open port numbers are returned.
+     *
+     * @return void
+     */
+    public function testGetOpenPortsIgnoresClosedPorts(): void
+    {
+        $fakeExec = static function (string $command): array {
+            return [
+                'Host: 192.168.1.101 ()  Ports: 80/open/tcp/////, 443/closed/tcp/////, 8080/open/tcp/////',
+            ];
+        };
+
+        $ports = NetworkModule::getOpenPorts('192.168.1.101', $fakeExec);
+
+        $this->assertSame([80, 8080], $ports);
+    }
 }

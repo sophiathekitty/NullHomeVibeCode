@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../models/SettingsModel.php';
+require_once __DIR__ . '/../../models/NmapScan.php';
 
 /**
  * NetworkModule — detects the host server's primary network interface info
@@ -71,6 +72,121 @@ class NetworkModule
             'mac'    => $mac,
             'subnet' => $subnet,
         ];
+    }
+
+    /**
+     * Discover live hosts on the subnet and persist them via the NmapScan model.
+     *
+     * Shells out to `nmap -sn -oG -` to perform a ping sweep, parses each
+     * `Host:` line in the grep output to extract IP addresses, filters out the
+     * host server's own IP, and persists the results via `$nmapScan->insertIps()`.
+     * Existing records are not overwritten.
+     *
+     * @param NmapScan      $nmapScan The NmapScan model instance used to persist IPs.
+     * @param string|null   $subnet   The CIDR subnet to scan (e.g. '192.168.1.0/24').
+     *                                If null, reads `host_subnet` from settings.
+     * @param callable|null $execFn   Optional callable used to execute shell commands.
+     *                                Signature: (string $command): array<int, string>
+     *                                where the return value is the lines of output.
+     *                                Defaults to a wrapper around the built-in exec().
+     * @return int Count of IP addresses found (after filtering the host IP).
+     * @throws \RuntimeException If no subnet is provided and `host_subnet` is not set,
+     *                           or if the subnet value is not valid CIDR notation.
+     */
+    public static function discoverIps(NmapScan $nmapScan, ?string $subnet = null, ?callable $execFn = null): int
+    {
+        $execFn = $execFn ?? static function (string $cmd): array {
+            exec($cmd, $output);
+            return $output;
+        };
+
+        $settings = null;
+        if ($subnet === null) {
+            $settings = new SettingsModel();
+            $subnet   = $settings->get('host_subnet');
+        }
+
+        if ($subnet === null) {
+            throw new \RuntimeException('Host subnet not configured');
+        }
+
+        // Validate subnet to prevent command injection: must be valid CIDR notation
+        // with each octet 0–255 and a prefix length of 0–32.
+        $subnetParts = explode('/', $subnet, 2);
+        if (
+            count($subnetParts) !== 2
+            || filter_var($subnetParts[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false
+            || !ctype_digit($subnetParts[1])
+            || (int) $subnetParts[1] > 32
+        ) {
+            throw new \RuntimeException('Invalid subnet format');
+        }
+
+        $lines = $execFn("nmap -sn -oG - {$subnet}");
+
+        $ips = [];
+        foreach ($lines as $line) {
+            if (preg_match('/^Host:\s+(\d+\.\d+\.\d+\.\d+)/', $line, $m)) {
+                $ips[] = $m[1];
+            }
+        }
+
+        // Filter out the host server's own IP.
+        $settings = $settings ?? new SettingsModel();
+        $hostIp   = $settings->get('host_ip');
+        if ($hostIp !== null) {
+            $ips = array_values(
+                array_filter($ips, static fn (string $ip): bool => $ip !== $hostIp)
+            );
+        }
+
+        $nmapScan->insertIps($ips);
+
+        return count($ips);
+    }
+
+    /**
+     * Return a list of open TCP ports on the given IP address.
+     *
+     * Shells out to `nmap -p- --open -oG -` to scan all 65535 ports, parses
+     * the `Ports:` line in the grep output, and returns only the port numbers
+     * whose state is `open`. Returns an empty array if nmap returns no output
+     * or no open ports are found.
+     *
+     * @param string        $ip     The IPv4 address to scan (e.g. '192.168.1.101').
+     * @param callable|null $execFn Optional callable used to execute shell commands.
+     *                              Signature: (string $command): array<int, string>
+     *                              where the return value is the lines of output.
+     *                              Defaults to a wrapper around the built-in exec().
+     * @return array<int, int> Array of open port numbers (integers).
+     */
+    public static function getOpenPorts(string $ip, ?callable $execFn = null): array
+    {
+        $execFn = $execFn ?? static function (string $cmd): array {
+            exec($cmd, $output);
+            return $output;
+        };
+
+        // Validate IP to prevent command injection.
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
+            return [];
+        }
+
+        $lines = $execFn("nmap -p- --open -oG - {$ip}");
+
+        $ports = [];
+        foreach ($lines as $line) {
+            if (preg_match('/Ports:\s+(.+)/', $line, $m)) {
+                foreach (explode(',', $m[1]) as $part) {
+                    [$portStr, $state] = array_pad(explode('/', trim($part), 3), 2, '');
+                    if ($portStr !== '' && $state === 'open') {
+                        $ports[] = (int) $portStr;
+                    }
+                }
+            }
+        }
+
+        return $ports;
     }
 
     /**

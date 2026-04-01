@@ -148,6 +148,119 @@ class QueryBuilder
     }
 
     /**
+     * Add a `field IS NULL` condition.
+     *
+     * @param string $field       Column name (wrapped in backticks).
+     * @param string $conjunction AND or OR (how this joins the previous condition).
+     * @return static
+     */
+    public function whereNull(string $field, string $conjunction = 'AND'): static
+    {
+        $this->conditions[] = [
+            'type'        => 'condition',
+            'conjunction' => strtoupper($conjunction),
+            'fragment'    => "`{$field}` IS NULL",
+        ];
+        return $this;
+    }
+
+    /**
+     * Add a `field IS NOT NULL` condition.
+     *
+     * @param string $field       Column name (wrapped in backticks).
+     * @param string $conjunction AND or OR (how this joins the previous condition).
+     * @return static
+     */
+    public function whereNotNull(string $field, string $conjunction = 'AND'): static
+    {
+        $this->conditions[] = [
+            'type'        => 'condition',
+            'conjunction' => strtoupper($conjunction),
+            'fragment'    => "`{$field}` IS NOT NULL",
+        ];
+        return $this;
+    }
+
+    /**
+     * Add a `field IN (v1, v2, ...)` condition.
+     *
+     * @param string   $field       Column name (wrapped in backticks).
+     * @param array    $values      List of values to match (bound via PDO).
+     * @param string   $conjunction AND or OR (how this joins the previous condition).
+     * @return static
+     */
+    public function whereIn(string $field, array $values, string $conjunction = 'AND'): static
+    {
+        if (empty($values)) {
+            $this->conditions[] = [
+                'type'        => 'condition',
+                'conjunction' => strtoupper($conjunction),
+                'fragment'    => '1 = 0',
+            ];
+            return $this;
+        }
+        $placeholders = implode(', ', array_fill(0, count($values), '?'));
+        $this->conditions[] = [
+            'type'        => 'condition',
+            'conjunction' => strtoupper($conjunction),
+            'fragment'    => "`{$field}` IN ({$placeholders})",
+        ];
+        foreach ($values as $value) {
+            $this->bindings[] = $value;
+        }
+        return $this;
+    }
+
+    /**
+     * Add a `field NOT IN (v1, v2, ...)` condition.
+     *
+     * @param string   $field       Column name (wrapped in backticks).
+     * @param array    $values      List of values to exclude (bound via PDO).
+     * @param string   $conjunction AND or OR (how this joins the previous condition).
+     * @return static
+     */
+    public function whereNotIn(string $field, array $values, string $conjunction = 'AND'): static
+    {
+        if (empty($values)) {
+            return $this;
+        }
+        $placeholders = implode(', ', array_fill(0, count($values), '?'));
+        $this->conditions[] = [
+            'type'        => 'condition',
+            'conjunction' => strtoupper($conjunction),
+            'fragment'    => "`{$field}` NOT IN ({$placeholders})",
+        ];
+        foreach ($values as $value) {
+            $this->bindings[] = $value;
+        }
+        return $this;
+    }
+
+    /**
+     * Add a raw SQL fragment as a WHERE condition.
+     *
+     * The caller is responsible for using ? placeholders for any values.
+     * Values are bound via PDO and appended to the binding list in order.
+     *
+     * @param string $fragment    Raw SQL condition fragment with ? placeholders.
+     * @param array  $bindings    Positional values for the ? placeholders.
+     * @param string $conjunction AND or OR (how this joins the previous condition).
+     * @return static
+     */
+    public function whereRaw(string $fragment, array $bindings = [], string $conjunction = 'AND'): static
+    {
+        $this->conditions[] = [
+            'type'        => 'condition',
+            'conjunction' => strtoupper($conjunction),
+            'fragment'    => $fragment,
+        ];
+        foreach ($bindings as $binding) {
+            $this->bindings[] = $binding;
+        }
+        return $this;
+    }
+
+    /**
      * Open a parenthesised condition group.
      *
      * @param string $conjunction How this group joins the previous condition.
@@ -275,6 +388,37 @@ class QueryBuilder
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($this->bindings);
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Execute UPDATE … SET … using the current WHERE state.
+     * Returns the number of affected rows.
+     *
+     * @param array<string, mixed> $data Associative array of column => value pairs to set.
+     * @return int Number of rows updated.
+     * @throws \RuntimeException If groups are not balanced.
+     */
+    public function update(array $data): int
+    {
+        $this->assertNoUnclosedGroups();
+
+        if (empty($data)) {
+            return 0;
+        }
+
+        $setParts    = [];
+        $setBindings = [];
+        foreach ($data as $col => $value) {
+            $setParts[]    = "`{$col}` = ?";
+            $setBindings[] = $value;
+        }
+
+        $sql  = 'UPDATE `' . $this->table . '` SET ' . implode(', ', $setParts);
+        $sql .= $this->buildWhere();
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(array_merge($setBindings, $this->bindings));
         return $stmt->rowCount();
     }
 

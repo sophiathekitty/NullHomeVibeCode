@@ -24,6 +24,7 @@ class DatabaseValidationService {
             'SettingsModel'  => $modelsDir . 'SettingsModel.php',
             'Room'           => $modelsDir . 'Room.php',
             'RoomNeighbor'   => $modelsDir . 'RoomNeighbor.php',
+            'NmapScan'       => $modelsDir . 'NmapScan.php',
         ];
     }
 
@@ -121,6 +122,25 @@ class DatabaseValidationService {
                 'model'  => 'RoomNeighbor',
                 'table'  => 'room_neighbors',
                 'status' => 'migration error (unique idx pair): ' . $e->getMessage(),
+            ];
+        }
+
+        // 4. Unique index on nmap_scans.ip_address.
+        try {
+            $idx = DB::query(
+                "SHOW INDEX FROM `nmap_scans` WHERE Key_name = 'idx_nmap_scans_ip'"
+            )->fetchAll();
+            if (empty($idx)) {
+                DB::connection()->exec(
+                    'CREATE UNIQUE INDEX `idx_nmap_scans_ip` ON `nmap_scans` (`ip_address`)'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError = true;
+            $results[] = [
+                'model'  => 'NmapScan',
+                'table'  => 'nmap_scans',
+                'status' => 'migration error (unique idx ip): ' . $e->getMessage(),
             ];
         }
 

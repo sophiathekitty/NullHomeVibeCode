@@ -1,0 +1,39 @@
+/* NullHome — room card grid/list layout */
+
+/* ── Rooms container ─────────────────────────────────── */
+
+.rooms-container {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ── Room card ───────────────────────────────────────── */
+
+.room-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1rem;
+    transition: border-color var(--transition);
+}
+
+.room-card:hover {
+    border-color: #555;
+}
+
+.room-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* ── Desktop: grid layout ────────────────────────────── */
+
+@media (min-width: 768px) {
+    .rooms-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+}

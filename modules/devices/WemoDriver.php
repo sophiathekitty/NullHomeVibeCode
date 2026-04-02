@@ -121,8 +121,8 @@ class WemoDriver
                 continue;
             }
 
-            $nameNodes = $dom->xpath('//friendlyName');
-            $macNodes  = $dom->xpath('//macAddress');
+            $nameNodes = $dom->xpath('//*[local-name()="friendlyName"]');
+            $macNodes  = $dom->xpath('//*[local-name()="macAddress"]');
 
             if (empty($nameNodes) || empty($macNodes)) {
                 continue;

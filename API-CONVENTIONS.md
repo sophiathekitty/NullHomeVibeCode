@@ -124,6 +124,12 @@ This shape is intentional for backward compatibility. New consumers should use t
 
 ---
 
+## Javascript notes
+
+When fetching api data it's important to remember that the response data is stored under data.
+
+---
+
 ## Summary
 
 | Convention | Decision |

@@ -22,7 +22,7 @@ function renderRooms(rooms) {
         container.appendChild(empty);
         return;
     }
-
+    console.log('Rendering rooms:', rooms);
     rooms.forEach(function (room) {
         var card = document.createElement('div');
         card.className = 'room-card';

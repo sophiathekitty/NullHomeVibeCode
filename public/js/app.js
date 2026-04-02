@@ -23,7 +23,15 @@ async function fetchRooms() {
         if (!response.ok) {
             return [];
         }
-        return response.json();
+        json = await response.json();
+        /* sample json response:
+        {"success":true,"data":[],"error":null}
+        */
+        // return data array if success is true, otherwise return empty array
+        if (json.success) {
+            return json.data;
+        }
+        return [];
     } catch (_err) {
         return [];
     }

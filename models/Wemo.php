@@ -136,6 +136,19 @@ class Wemo extends Model
     }
 
     /**
+     * Find a Wemo record by IP address.
+     *
+     * @param string $ip The IP address to search for.
+     * @return array<string, mixed>|null The matching row, or null if not found.
+     */
+    public function findByIp(string $ip): ?array
+    {
+        return static::query()
+            ->where('ip_address', $ip)
+            ->first();
+    }
+
+    /**
      * Return all rows from the wemos table.
      *
      * @return array<int, array<string, mixed>>

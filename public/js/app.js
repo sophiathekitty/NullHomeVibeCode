@@ -70,6 +70,7 @@ async function init() {
         renderRooms(rooms);
     });
     initRoomRemove(getRooms, setRooms);
+    initWemoScan();
 }
 
 document.addEventListener('DOMContentLoaded', init);

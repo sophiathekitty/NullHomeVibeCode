@@ -1,6 +1,8 @@
 <?php
 require_once APP_ROOT . '/models/Wemo.php';
 require_once APP_ROOT . '/models/LightsModel.php';
+require_once APP_ROOT . '/models/NmapScan.php';
+require_once APP_ROOT . '/modules/network/NetworkModule.php';
 
 /**
  * WemoDriver — HTTP-unaware driver for Belkin Wemo smart plug devices.
@@ -23,6 +25,165 @@ class WemoDriver
 
     /** @var int Return code when the parsed tag value equals "Error". */
     const DEVICE_ERROR = 99;
+
+    // ── Scan methods ───────────────────────────────────────────────────────────
+
+    /**
+     * Check the next unchecked IP from the nmap scan queue.
+     *
+     * Each call dequeues one IP, determines whether it is a Wemo device, updates
+     * the nmap record with the result, and returns status information for the
+     * frontend scan loop.
+     *
+     * Steps:
+     *   1. If no unchecked IPs remain, returns `['done' => true, 'remaining' => 0]`.
+     *   2. If the IP is already a known Wemo (by IP), marks it as 'wemo' and
+     *      returns `result => 'known_wemo'`.
+     *   3. Calls `NetworkModule::getOpenPorts()` (or the injected callable). If no
+     *      ports are open, marks the record 'other' and returns `result => 'no_ports'`.
+     *   4. For each open port, fetches `http://{ip}:{port}/setup.xml` via the
+     *      `$fetchFn` callable. Parses `<friendlyName>` and `<macAddress>`.
+     *   5. On a valid setup.xml: creates or updates the Wemo record, creates a
+     *      linked Light on first discovery, marks the nmap record 'wemo', and
+     *      returns `result => 'found_wemo'`. Stops after the first matching port.
+     *   6. If no port yields a valid setup.xml, marks as 'other' and returns
+     *      `result => 'not_wemo'`.
+     *
+     * @param NmapScan           $nmapScan  NmapScan model instance.
+     * @param Wemo               $wemoModel Wemo model instance.
+     * @param callable|null      $fetchFn   Optional callable replacing the cURL
+     *                                      setup.xml fetch for testing.
+     *                                      Signature: (string $url): string|false
+     * @param callable|null      $portsFn   Optional callable replacing
+     *                                      NetworkModule::getOpenPorts() for testing.
+     *                                      Signature: (string $ip): array<int, int>
+     * @param LightsModel|null   $lightsModel Optional LightsModel instance for testing.
+     * @return array<string, mixed> Status array with at minimum `done` and `remaining`.
+     */
+    public static function checkNextIp(
+        NmapScan $nmapScan,
+        Wemo $wemoModel,
+        ?callable $fetchFn = null,
+        ?callable $portsFn = null,
+        ?LightsModel $lightsModel = null
+    ): array {
+        $lightsModel ??= new LightsModel();
+
+        $record = $nmapScan->getNextUnchecked();
+
+        if ($record === null) {
+            return ['done' => true, 'remaining' => 0];
+        }
+
+        $ip = (string) $record['ip_address'];
+        $id = (int) $record['id'];
+
+        // Step 2 — already a known Wemo at this IP.
+        if ($wemoModel->findByIp($ip) !== null) {
+            $nmapScan->markChecked($id, 'wemo');
+            return [
+                'done'      => false,
+                'remaining' => $nmapScan->getRemainingCount(),
+                'result'    => 'known_wemo',
+                'ip'        => $ip,
+            ];
+        }
+
+        // Step 3 — discover open ports.
+        $ports = $portsFn !== null
+            ? $portsFn($ip)
+            : NetworkModule::getOpenPorts($ip);
+
+        if (empty($ports)) {
+            $nmapScan->markChecked($id, 'other');
+            return [
+                'done'      => false,
+                'remaining' => $nmapScan->getRemainingCount(),
+                'result'    => 'no_ports',
+                'ip'        => $ip,
+            ];
+        }
+
+        // Steps 4–6 — probe each port for a Wemo setup.xml.
+        foreach ($ports as $port) {
+            $url = 'http://' . $ip . ':' . $port . '/setup.xml';
+
+            $xml = $fetchFn !== null
+                ? $fetchFn($url)
+                : static::fetchSetupXml($url);
+
+            if ($xml === false || $xml === '') {
+                continue;
+            }
+
+            $dom = @simplexml_load_string($xml);
+            if ($dom === false) {
+                continue;
+            }
+
+            $nameNodes = $dom->xpath('//*[local-name()="friendlyName"]');
+            $macNodes  = $dom->xpath('//*[local-name()="macAddress"]');
+
+            if (empty($nameNodes) || empty($macNodes)) {
+                continue;
+            }
+
+            $name = trim((string) $nameNodes[0]);
+            $mac  = strtolower(trim((string) $macNodes[0]));
+
+            if ($name === '' || $mac === '') {
+                continue;
+            }
+
+            // Valid Wemo found — create or update the DB record.
+            $existing = $wemoModel->findByMac($mac);
+
+            if ($existing !== null) {
+                // Update only fields that have changed.
+                $changes = [];
+                if ($existing['ip_address'] !== $ip) {
+                    $changes['ip_address'] = $ip;
+                }
+                if ((int) $existing['port'] !== (int) $port) {
+                    $changes['port'] = $port;
+                }
+                if ($existing['name'] !== $name) {
+                    $changes['name'] = $name;
+                }
+                if (!empty($changes)) {
+                    $wemoModel->updateWemo((int) $existing['id'], $changes);
+                }
+            } else {
+                // First discovery — create Wemo and linked Light.
+                $lightId = $lightsModel->create(['name' => $name]);
+                $wemoModel->createWemo([
+                    'name'        => $name,
+                    'mac_address' => $mac,
+                    'ip_address'  => $ip,
+                    'port'        => $port,
+                    'light_id'    => $lightId,
+                ]);
+            }
+
+            $nmapScan->markChecked($id, 'wemo');
+            return [
+                'done'      => false,
+                'remaining' => $nmapScan->getRemainingCount(),
+                'result'    => 'found_wemo',
+                'ip'        => $ip,
+                'name'      => $name,
+            ];
+        }
+
+        // No port yielded a valid setup.xml.
+        $nmapScan->markChecked($id, 'other');
+        return [
+            'done'      => false,
+            'remaining' => $nmapScan->getRemainingCount(),
+            'result'    => 'not_wemo',
+            'ip'        => $ip,
+        ];
+    }
 
     // ── Public methods ─────────────────────────────────────────────────────────
 
@@ -129,6 +290,31 @@ class WemoDriver
     }
 
     // ── Private methods ────────────────────────────────────────────────────────
+
+    /**
+     * Fetch the setup.xml from a Wemo device via cURL.
+     *
+     * @param string $url The full URL to fetch (e.g. 'http://192.168.1.5:49153/setup.xml').
+     * @return string|false The raw response body, or false on failure.
+     */
+    private static function fetchSetupXml(string $url): string|false
+    {
+        $ch = curl_init($url);
+        if ($ch === false) {
+            return false;
+        }
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 3,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_0,
+        ]);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return $response;
+    }
 
     /**
      * Send a SOAP request to a Wemo device and return the raw response.

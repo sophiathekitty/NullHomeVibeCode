@@ -15,6 +15,7 @@
     <title>nullhome</title>
     <link rel="stylesheet" href="/public/css/main.css">
     <link rel="stylesheet" href="/public/css/rooms.css">
+    <link rel="stylesheet" href="/public/css/wemo-scan.css">
 </head>
 <body>
 
@@ -36,6 +37,7 @@
     <ul class="drawer-menu">
         <li><button id="openAddRoom">Add Room</button></li>
         <li><button id="openRemoveRoom">Remove Room</button></li>
+        <li><button id="openWemoScan">Scan for Wemos</button></li>
     </ul>
 </nav>
 
@@ -68,6 +70,32 @@
     </div>
 </div>
 
+<!-- Wemo Scan overlay -->
+<div class="modal-overlay wemo-scan-overlay" id="wemoScanOverlay" hidden>
+    <div class="modal wemo-scan-modal">
+        <h2>Scan for Wemos</h2>
+
+        <div class="wemo-scan-status" id="wemoScanStatus">Ready to scan</div>
+
+        <div class="wemo-scan-progress-wrap" id="wemoScanProgressWrap" hidden>
+            <div class="wemo-scan-progress-bar">
+                <div class="wemo-scan-progress-fill" id="wemoScanProgressFill"></div>
+            </div>
+            <div class="wemo-scan-progress-label" id="wemoScanProgressLabel"></div>
+        </div>
+
+        <ul class="wemo-scan-found-list" id="wemoScanFoundList" hidden>
+            <!-- populated by JS during scan -->
+        </ul>
+
+        <div class="modal-actions">
+            <button id="wemoScanStart">Start Scan</button>
+            <button id="wemoScanCancel" hidden>Cancel</button>
+            <button id="wemoScanClose" hidden>Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- Main content -->
 <main class="rooms-container" id="roomsContainer">
     <!-- populated by JS -->
@@ -77,6 +105,7 @@
 <script src="/public/js/rooms.js"></script>
 <script src="/public/js/room-form.js"></script>
 <script src="/public/js/room-remove.js"></script>
+<script src="/public/js/wemo-scan.js"></script>
 <script src="/public/js/app.js"></script>
 </body>
 </html>

@@ -2,8 +2,8 @@
  * NullHome — Wemo scan UI.
  *
  * Drives the frontend side of the incremental Wemo scan loop:
- *   1. POST /api/scan-reset.php  — resets and populates the nmap scan queue.
- *   2. POST /api/scan-next.php   — called in a loop, one step per call,
+ *   1. POST /api/scan/reset        — resets and populates the nmap scan queue.
+ *   2. POST /api/scan/next/wemo    — called in a loop, one step per call,
  *      until the server returns `done: true`.
  *
  * The overlay shows:
@@ -113,7 +113,7 @@ function initWemoScan() {
     }
 
     /**
-     * Run one step of the scan loop by calling POST /api/scan-next.php.
+     * Run one step of the scan loop by calling POST /api/scan/next/wemo.
      *
      * Schedules itself recursively (via setTimeout) until done or cancelled.
      *
@@ -129,11 +129,14 @@ function initWemoScan() {
         }
 
         try {
-            var resp = await fetch('/api/scan-next.php', { method: 'POST' });
-            if (!resp.ok) {
-                throw new Error('Server error: ' + resp.status);
+            var resp = await fetch('/api/scan/next/wemo', { method: 'POST' });
+            var envelope = await resp.json();
+
+            if (!resp.ok || envelope.error) {
+                throw new Error(envelope.error || 'Server error: ' + resp.status);
             }
-            var data = await resp.json();
+
+            var data = envelope.data || {};
 
             if (data.done) {
                 updateProgress(0);
@@ -180,16 +183,14 @@ function initWemoScan() {
         foundList.innerHTML      = '';
 
         try {
-            var resp = await fetch('/api/scan-reset.php', { method: 'POST' });
-            if (!resp.ok) {
-                throw new Error('Server error: ' + resp.status);
-            }
-            var data = await resp.json();
+            var resp = await fetch('/api/scan/reset', { method: 'POST' });
+            var envelope = await resp.json();
 
-            if (data.error) {
-                throw new Error(data.error);
+            if (!resp.ok || envelope.error) {
+                throw new Error(envelope.error || 'Server error: ' + resp.status);
             }
 
+            var data = envelope.data || {};
             totalQueued = data.queued || 0;
 
             if (totalQueued === 0) {

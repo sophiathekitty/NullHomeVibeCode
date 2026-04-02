@@ -2,19 +2,14 @@
 require_once __DIR__ . '/Controller.php';
 require_once APP_ROOT . '/models/NmapScan.php';
 require_once APP_ROOT . '/models/Wemo.php';
-require_once APP_ROOT . '/modules/network/NetworkModule.php';
 require_once APP_ROOT . '/modules/devices/WemoDriver.php';
 
 /**
- * WemoController — coordinates the Wemo device scan workflow.
+ * WemoController — coordinates the per-IP Wemo device scan step.
  *
- * Provides two methods consumed by the frontend scan loop:
- *   - resetScan()  — clears stale nmap records and starts a fresh ping sweep.
- *   - checkNext()  — processes one IP and returns its classification result.
- *
- * Both methods output JSON directly. All business logic is delegated to
- * WemoDriver and the model layer; this class only reads HTTP inputs and
- * translates results into JSON responses.
+ * Provides one method consumed by ScanHandler to advance the scan loop one
+ * step for the Wemo device type. All business logic is delegated to
+ * WemoDriver and the model layer; this controller is HTTP-unaware.
  */
 class WemoController extends Controller
 {
@@ -24,52 +19,24 @@ class WemoController extends Controller
     }
 
     /**
-     * Reset the nmap scan table and run a fresh ping sweep to populate it.
+     * Process the next unchecked IP in the nmap scan queue for Wemo detection.
      *
-     * Calls NmapScan::resetScan() to clear non-known records, then calls
-     * NetworkModule::discoverIps() to insert newly discovered live IPs.
+     * Instantiates NmapScan and Wemo models and delegates to
+     * WemoDriver::checkNextIp(). Returns the result array directly so the
+     * calling handler can wrap it in the standard JSON envelope.
      *
-     * Outputs JSON:
-     *   - Success: `{ "queued": <count> }`
-     *   - Failure (subnet not configured): HTTP 500 + `{ "error": "Host subnet not configured" }`
+     * Possible return values:
+     *   - `['done' => true, 'remaining' => 0]` — scan complete.
+     *   - `['done' => false, 'remaining' => N, 'result' => '...', 'ip' => '...']` — in progress.
      *
-     * @return void
+     * @return array<string, mixed> Status array from WemoDriver::checkNextIp().
      */
-    public function resetScan(): void
-    {
-        $nmapScan = new NmapScan();
-        $nmapScan->resetScan();
-
-        try {
-            $queued = NetworkModule::discoverIps($nmapScan);
-        } catch (\RuntimeException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Host subnet not configured']);
-            return;
-        }
-
-        echo json_encode(['queued' => $queued]);
-    }
-
-    /**
-     * Process the next unchecked IP in the nmap scan queue.
-     *
-     * Instantiates NmapScan and Wemo models, delegates to
-     * WemoDriver::checkNextIp(), and outputs the result as JSON.
-     *
-     * Possible responses:
-     *   - `{ "done": true, "remaining": 0 }` — scan complete.
-     *   - `{ "done": false, "remaining": N, "result": "...", "ip": "..." }` — in progress.
-     *
-     * @return void
-     */
-    public function checkNext(): void
+    public function checkNext(): array
     {
         $nmapScan  = new NmapScan();
         $wemoModel = new Wemo();
 
-        $result = WemoDriver::checkNextIp($nmapScan, $wemoModel);
-
-        echo json_encode($result);
+        return WemoDriver::checkNextIp($nmapScan, $wemoModel);
     }
 }
+

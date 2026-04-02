@@ -56,6 +56,7 @@ $handlers = [
     'lights'   => __DIR__ . '/handlers/LightsHandler.php',
     'settings' => __DIR__ . '/handlers/SettingsHandler.php',
     'rooms'    => __DIR__ . '/handlers/RoomsHandler.php',
+    'scan'     => __DIR__ . '/handlers/ScanHandler.php',
 ];
 
 if (!isset($handlers[$resource])) {

@@ -25,6 +25,7 @@ class DatabaseValidationService {
             'Room'           => $modelsDir . 'Room.php',
             'RoomNeighbor'   => $modelsDir . 'RoomNeighbor.php',
             'NmapScan'       => $modelsDir . 'NmapScan.php',
+            'Wemo'           => $modelsDir . 'Wemo.php',
         ];
     }
 
@@ -141,6 +142,25 @@ class DatabaseValidationService {
                 'model'  => 'NmapScan',
                 'table'  => 'nmap_scans',
                 'status' => 'migration error (unique idx ip): ' . $e->getMessage(),
+            ];
+        }
+
+        // 5. Unique index on wemos.mac_address.
+        try {
+            $idx = DB::query(
+                "SHOW INDEX FROM `wemos` WHERE Key_name = 'idx_wemos_mac'"
+            )->fetchAll();
+            if (empty($idx)) {
+                DB::connection()->exec(
+                    'CREATE UNIQUE INDEX `idx_wemos_mac` ON `wemos` (`mac_address`)'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError = true;
+            $results[] = [
+                'model'  => 'Wemo',
+                'table'  => 'wemos',
+                'status' => 'migration error (unique idx mac): ' . $e->getMessage(),
             ];
         }
 

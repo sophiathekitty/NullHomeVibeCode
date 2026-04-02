@@ -12,13 +12,12 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../modules/db/DB.php';
 require_once __DIR__ . '/../models/LightsModel.php';
 require_once __DIR__ . '/../controllers/LightsController.php';
+require_once APP_ROOT . '/modules/devices/WemoDriver.php';
 
 // Example: log a heartbeat timestamp so we know the service is running.
 $timestamp = date('Y-m-d H:i:s');
 echo "[every_minute] tick at $timestamp\n";
 
-// TODO: Add minute-level automation rules here.
-// Examples:
-//   - Check schedules and toggle lights on/off
-//   - Poll sensor data
-//   - Update state from external integrations
+// Poll all known Wemo devices and sync their state to the database.
+WemoDriver::observe();
+

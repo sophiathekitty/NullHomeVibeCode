@@ -15,7 +15,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../modules/db/DB.php';
 require_once __DIR__ . '/../models/Model.php';
-require_once __DIR__ . '/../models/LightsModel.php';
+require_once __DIR__ . '/../models/Device.php';
 require_once __DIR__ . '/../models/SettingsModel.php';
 
 $timestamp = date('Y-m-d H:i:s');
@@ -23,7 +23,7 @@ echo "[reboot] starting NullHome at $timestamp\n";
 
 // Sync all model tables so the schema is up to date before the app starts.
 $models = [
-    new LightsModel(),
+    new Device(),
     new SettingsModel(),
 ];
 

@@ -11,7 +11,7 @@
 
 require_once APP_ROOT . '/models/NmapScan.php';
 require_once APP_ROOT . '/models/Wemo.php';
-require_once APP_ROOT . '/models/LightsModel.php';
+require_once APP_ROOT . '/models/Device.php';
 require_once APP_ROOT . '/modules/network/NetworkModule.php';
 require_once APP_ROOT . '/modules/devices/WemoDriver.php';
 
@@ -25,8 +25,8 @@ class WemoDriverScanTest extends BaseTestCase
     /** @var Wemo */
     private Wemo $wemoModel;
 
-    /** @var LightsModel */
-    private LightsModel $lightsModel;
+    /** @var Device */
+    private Device $deviceModel;
 
     /**
      * Truncate all relevant tables before every test for a clean slate.
@@ -38,11 +38,11 @@ class WemoDriverScanTest extends BaseTestCase
         parent::setUp();
         $this->nmapScan    = new NmapScan();
         $this->wemoModel   = new Wemo();
-        $this->lightsModel = new LightsModel();
+        $this->deviceModel = new Device();
 
         DB::connection()->exec('TRUNCATE TABLE `nmap_scans`');
         DB::connection()->exec('TRUNCATE TABLE `wemos`');
-        DB::connection()->exec('TRUNCATE TABLE `lights`');
+        DB::connection()->exec('TRUNCATE TABLE `devices`');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -202,12 +202,12 @@ class WemoDriverScanTest extends BaseTestCase
     }
 
     /**
-     * checkNextIp() creates a new Wemo record and linked Light when setup.xml
+     * checkNextIp() creates a new Wemo record and linked Device when setup.xml
      * is valid and the MAC address is not yet in the database.
      *
      * @return void
      */
-    public function testCheckNextIpCreatesNewWemoAndLight(): void
+    public function testCheckNextIpCreatesNewWemoAndDevice(): void
     {
         $ip  = '192.168.1.53';
         $id  = $this->insertIp($ip);
@@ -221,7 +221,7 @@ class WemoDriverScanTest extends BaseTestCase
             $this->wemoModel,
             $fetchFn,
             $portsFn,
-            $this->lightsModel
+            $this->deviceModel
         );
 
         $this->assertFalse($result['done']);
@@ -234,14 +234,14 @@ class WemoDriverScanTest extends BaseTestCase
         $this->assertNotNull($wemoRow, 'Wemo record must be created');
         $this->assertSame($ip, $wemoRow['ip_address']);
 
-        // Linked Light must exist.
-        $this->assertNotNull($wemoRow['light_id'], 'light_id must be set');
-        $lightRow = DB::query(
-            'SELECT * FROM `lights` WHERE id = ?',
-            [(int) $wemoRow['light_id']]
+        // Linked Device must exist.
+        $this->assertNotNull($wemoRow['device_id'], 'device_id must be set');
+        $deviceRow = DB::query(
+            'SELECT * FROM `devices` WHERE id = ?',
+            [(int) $wemoRow['device_id']]
         )->fetch(PDO::FETCH_ASSOC);
-        $this->assertNotNull($lightRow, 'Light record must be created');
-        $this->assertSame('Desk Lamp', $lightRow['name']);
+        $this->assertNotNull($deviceRow, 'Device record must be created');
+        $this->assertSame('Desk Lamp', $deviceRow['name']);
 
         // nmap record must be marked 'wemo'.
         $nmapRow = DB::query(
@@ -254,7 +254,7 @@ class WemoDriverScanTest extends BaseTestCase
     /**
      * checkNextIp() updates an existing Wemo with the new IP when setup.xml
      * returns a MAC that already exists in the database, and does NOT create
-     * a second Light record.
+     * a second Device record.
      *
      * @return void
      */
@@ -265,16 +265,21 @@ class WemoDriverScanTest extends BaseTestCase
         $id    = $this->insertIp($newIp);
 
         // Pre-existing Wemo with an old IP.
-        $lightId = $this->lightsModel->create(['name' => 'Bookshelf Light']);
+        $deviceId = $this->deviceModel->insert([
+            'name'       => 'Bookshelf Light',
+            'type'       => 'light',
+            'state'      => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
         $this->wemoModel->createWemo([
             'name'        => 'Bookshelf Light',
             'mac_address' => $mac,
             'ip_address'  => '192.168.1.100',
             'port'        => 49153,
-            'light_id'    => $lightId,
+            'device_id'   => $deviceId,
         ]);
 
-        $lightCountBefore = (int) DB::query('SELECT COUNT(*) FROM `lights`')->fetchColumn();
+        $deviceCountBefore = (int) DB::query('SELECT COUNT(*) FROM `devices`')->fetchColumn();
 
         $xml     = $this->setupXml('Bookshelf Light', $mac);
         $portsFn = fn(string $scanIp): array => [49153];
@@ -285,7 +290,7 @@ class WemoDriverScanTest extends BaseTestCase
             $this->wemoModel,
             $fetchFn,
             $portsFn,
-            $this->lightsModel
+            $this->deviceModel
         );
 
         $this->assertSame('found_wemo', $result['result']);
@@ -294,12 +299,12 @@ class WemoDriverScanTest extends BaseTestCase
         $wemoRow = $this->wemoModel->findByMac($mac);
         $this->assertSame($newIp, $wemoRow['ip_address'], 'IP address must be updated');
 
-        // No extra Light must have been created.
-        $lightCountAfter = (int) DB::query('SELECT COUNT(*) FROM `lights`')->fetchColumn();
+        // No extra Device must have been created.
+        $deviceCountAfter = (int) DB::query('SELECT COUNT(*) FROM `devices`')->fetchColumn();
         $this->assertSame(
-            $lightCountBefore,
-            $lightCountAfter,
-            'Light::create() must NOT be called for an existing Wemo'
+            $deviceCountBefore,
+            $deviceCountAfter,
+            'Device::insert() must NOT be called for an existing Wemo'
         );
     }
 
@@ -328,7 +333,7 @@ class WemoDriverScanTest extends BaseTestCase
             $this->wemoModel,
             $fetchFn,
             $portsFn,
-            $this->lightsModel
+            $this->deviceModel
         );
 
         $this->assertSame(1, $callCount, 'fetchFn must be called exactly once (first matching port)');

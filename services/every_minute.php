@@ -10,8 +10,6 @@
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../modules/db/DB.php';
-require_once __DIR__ . '/../models/LightsModel.php';
-require_once __DIR__ . '/../controllers/LightsController.php';
 require_once APP_ROOT . '/modules/devices/WemoDriver.php';
 
 // Example: log a heartbeat timestamp so we know the service is running.

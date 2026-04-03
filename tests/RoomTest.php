@@ -12,7 +12,7 @@
 require_once APP_ROOT . '/models/Model.php';
 require_once APP_ROOT . '/models/Room.php';
 require_once APP_ROOT . '/models/RoomNeighbor.php';
-require_once APP_ROOT . '/models/LightsModel.php';
+require_once APP_ROOT . '/models/Device.php';
 require_once APP_ROOT . '/modules/RoomLighting.php';
 require_once APP_ROOT . '/controllers/RoomController.php';
 
@@ -26,16 +26,16 @@ class RoomTest extends BaseTestCase
     private int $hallwayId;
 
     /**
-     * Truncate rooms, room_neighbors, and lights before every test and
+     * Truncate rooms, room_neighbors, and devices before every test and
      * re-seed a minimal known state.
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Clean slate — foreign-key order: lights first, then neighbors, then rooms.
+        // Clean slate — foreign-key order: devices first, then neighbors, then rooms.
         DB::connection()->exec('SET FOREIGN_KEY_CHECKS = 0');
-        DB::connection()->exec('TRUNCATE TABLE `lights`');
+        DB::connection()->exec('TRUNCATE TABLE `devices`');
         DB::connection()->exec('TRUNCATE TABLE `room_neighbors`');
         DB::connection()->exec('TRUNCATE TABLE `rooms`');
         DB::connection()->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -61,17 +61,18 @@ class RoomTest extends BaseTestCase
         $this->assertTableExists('room_neighbors');
     }
 
-    /** The lights table has the new columns and not the legacy location column. */
-    public function testLightsTableHasCorrectColumns(): void
+    /** The devices table has the expected columns. */
+    public function testDevicesTableHasCorrectColumns(): void
     {
-        $cols = DB::query('SHOW COLUMNS FROM `lights`')->fetchAll(PDO::FETCH_ASSOC);
+        $cols  = DB::query('SHOW COLUMNS FROM `devices`')->fetchAll(PDO::FETCH_ASSOC);
         $names = array_column($cols, 'Field');
 
-        $this->assertContains('type',              $names, 'lights must have type column');
-        $this->assertContains('subtype',           $names, 'lights must have subtype column');
-        $this->assertContains('room_id',           $names, 'lights must have room_id column');
-        $this->assertContains('last_state_change', $names, 'lights must have last_state_change column');
-        $this->assertNotContains('location',       $names, 'lights must NOT have location column');
+        $this->assertContains('type',       $names, 'devices must have type column');
+        $this->assertContains('subtype',    $names, 'devices must have subtype column');
+        $this->assertContains('room_id',    $names, 'devices must have room_id column');
+        $this->assertContains('color',      $names, 'devices must have color column');
+        $this->assertContains('brightness', $names, 'devices must have brightness column');
+        $this->assertContains('updated_at', $names, 'devices must have updated_at column');
     }
 
     // ── Room model ────────────────────────────────────────────────────────────
@@ -137,52 +138,54 @@ class RoomTest extends BaseTestCase
         $this->assertNull(Room::findById($this->basementId));
     }
 
-    // ── Room::lights() ────────────────────────────────────────────────────────
+    // ── Room::devices() ───────────────────────────────────────────────────────
 
-    /** Room::lights() returns only lights with type='light' for the given room. */
-    public function testRoomLightsFiltersCorrectly(): void
+    /** Room::devices() returns only devices with type='light' for the given room. */
+    public function testRoomDevicesFiltersCorrectly(): void
     {
-        $lightsModel = new LightsModel();
+        $deviceStub = new Device();
 
-        // Two lights in basement with type='light'.
-        $lightsModel->insert([
-            'name'    => 'basement_lamp',
-            'type'    => 'light',
-            'subtype' => 'lamp',
-            'room_id' => $this->basementId,
-            'state'   => 1,
+        // Two light-type devices in basement.
+        $deviceStub->insert([
+            'name'       => 'basement_lamp',
+            'type'       => 'light',
+            'subtype'    => 'lamp',
+            'room_id'    => $this->basementId,
+            'state'      => 1,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
-        $lightsModel->insert([
-            'name'    => 'basement_ambient',
-            'type'    => 'light',
-            'subtype' => 'ambient',
-            'room_id' => $this->basementId,
-            'state'   => 0,
+        $deviceStub->insert([
+            'name'       => 'basement_ambient',
+            'type'       => 'light',
+            'subtype'    => 'ambient',
+            'room_id'    => $this->basementId,
+            'state'      => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
-        // One light in stairs — should NOT appear in basement's lights.
-        $lightsModel->insert([
-            'name'    => 'stairs_light',
-            'type'    => 'light',
-            'subtype' => null,
-            'room_id' => $this->stairsId,
-            'state'   => 0,
+        // One light device in stairs — should NOT appear in basement's devices.
+        $deviceStub->insert([
+            'name'       => 'stairs_light',
+            'type'       => 'light',
+            'room_id'    => $this->stairsId,
+            'state'      => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
         // Non-light device type in basement — should NOT appear.
-        $lightsModel->insert([
-            'name'    => 'basement_sensor',
-            'type'    => 'sensor',
-            'subtype' => null,
-            'room_id' => $this->basementId,
-            'state'   => 0,
+        $deviceStub->insert([
+            'name'       => 'basement_fan',
+            'type'       => 'device',
+            'room_id'    => $this->basementId,
+            'state'      => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        $room   = Room::findById($this->basementId);
-        $lights = $room->lights();
+        $room    = Room::findById($this->basementId);
+        $devices = $room->devices();
 
-        $this->assertCount(2, $lights);
-        $lightNames = array_column($lights, 'name');
-        $this->assertContains('basement_lamp',    $lightNames);
-        $this->assertContains('basement_ambient', $lightNames);
+        $this->assertCount(2, $devices);
+        $deviceNames = array_column($devices, 'name');
+        $this->assertContains('basement_lamp',    $deviceNames);
+        $this->assertContains('basement_ambient', $deviceNames);
     }
 
     // ── Room::neighbors() ─────────────────────────────────────────────────────
@@ -283,14 +286,15 @@ class RoomTest extends BaseTestCase
         $this->assertFalse($service->isBright($room));
     }
 
-    /** isBright() returns false when all lights are off. */
+    /** isBright() returns false when all devices are off. */
     public function testIsBrightFalseWhenAllOff(): void
     {
-        (new LightsModel())->insert([
-            'name'    => 'basement_lamp',
-            'type'    => 'light',
-            'room_id' => $this->basementId,
-            'state'   => 0,
+        (new Device())->insert([
+            'name'       => 'basement_lamp',
+            'type'       => 'light',
+            'room_id'    => $this->basementId,
+            'state'      => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
         $service = new RoomLighting();
@@ -299,12 +303,12 @@ class RoomTest extends BaseTestCase
         $this->assertFalse($service->isBright($room));
     }
 
-    /** isBright() returns true when at least one light is on. */
+    /** isBright() returns true when at least one device is on. */
     public function testIsBrightTrueWhenOneLightOn(): void
     {
-        $lm = new LightsModel();
-        $lm->insert(['name' => 'b_lamp', 'type' => 'light', 'room_id' => $this->basementId, 'state' => 0]);
-        $lm->insert(['name' => 'b_amb',  'type' => 'light', 'room_id' => $this->basementId, 'state' => 1]);
+        $d = new Device();
+        $d->insert(['name' => 'b_lamp', 'type' => 'light', 'room_id' => $this->basementId, 'state' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+        $d->insert(['name' => 'b_amb',  'type' => 'light', 'room_id' => $this->basementId, 'state' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
 
         $service = new RoomLighting();
         $room    = Room::findById($this->basementId);
@@ -315,11 +319,12 @@ class RoomTest extends BaseTestCase
     /** isBright() ignores non-light devices (type != 'light'). */
     public function testIsBrightIgnoresNonLightDevices(): void
     {
-        (new LightsModel())->insert([
-            'name'    => 'sensor',
-            'type'    => 'sensor',
-            'room_id' => $this->basementId,
-            'state'   => 1,
+        (new Device())->insert([
+            'name'       => 'fan',
+            'type'       => 'device',
+            'room_id'    => $this->basementId,
+            'state'      => 1,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
         $service = new RoomLighting();
@@ -342,12 +347,12 @@ class RoomTest extends BaseTestCase
     {
         $ts = date('Y-m-d H:i:s', time() - 120); // 2 minutes ago
 
-        (new LightsModel())->insert([
-            'name'              => 'b_lamp',
-            'type'              => 'light',
-            'room_id'           => $this->basementId,
-            'state'             => 1,
-            'last_state_change' => $ts,
+        (new Device())->insert([
+            'name'       => 'b_lamp',
+            'type'       => 'light',
+            'room_id'    => $this->basementId,
+            'state'      => 1,
+            'updated_at' => $ts,
         ]);
 
         $service = new RoomLighting();
@@ -374,11 +379,11 @@ class RoomTest extends BaseTestCase
         RoomNeighbor::link($this->basementId, $this->stairsId);
         RoomNeighbor::link($this->basementId, $this->hallwayId);
 
-        $lm = new LightsModel();
-        // Stairs has a light ON.
-        $lm->insert(['name' => 's_light', 'type' => 'light', 'room_id' => $this->stairsId,  'state' => 1]);
-        // Hallway lights are OFF.
-        $lm->insert(['name' => 'h_light', 'type' => 'light', 'room_id' => $this->hallwayId, 'state' => 0]);
+        $d = new Device();
+        // Stairs has a device ON.
+        $d->insert(['name' => 's_light', 'type' => 'light', 'room_id' => $this->stairsId,  'state' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
+        // Hallway devices are OFF.
+        $d->insert(['name' => 'h_light', 'type' => 'light', 'room_id' => $this->hallwayId, 'state' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
 
         $service = new RoomLighting();
         $room    = Room::findById($this->basementId);
@@ -397,18 +402,18 @@ class RoomTest extends BaseTestCase
         $this->assertSame(0, $service->secondsSinceNeighborStateChange($room));
     }
 
-    /** secondsSinceNeighborStateChange() derives from MAX(last_state_change) of neighbor lights. */
+    /** secondsSinceNeighborStateChange() derives from MAX(updated_at) of neighbor devices. */
     public function testSecondsSinceNeighborStateChange(): void
     {
         RoomNeighbor::link($this->basementId, $this->stairsId);
 
         $ts = date('Y-m-d H:i:s', time() - 60); // 60 seconds ago
-        (new LightsModel())->insert([
-            'name'              => 's_light',
-            'type'              => 'light',
-            'room_id'           => $this->stairsId,
-            'state'             => 1,
-            'last_state_change' => $ts,
+        (new Device())->insert([
+            'name'       => 's_light',
+            'type'       => 'light',
+            'room_id'    => $this->stairsId,
+            'state'      => 1,
+            'updated_at' => $ts,
         ]);
 
         $service = new RoomLighting();
@@ -518,25 +523,26 @@ class RoomTest extends BaseTestCase
         $this->assertFalse($this->makeController()->destroy(99999));
     }
 
-    /** lights() returns formatted light rows with is_on; null for missing room. */
-    public function testControllerLights(): void
+    /** devices() returns formatted device rows with is_on; null for missing room. */
+    public function testControllerDevices(): void
     {
-        (new LightsModel())->insert([
-            'name'    => 'b_lamp',
-            'type'    => 'light',
-            'subtype' => 'lamp',
-            'room_id' => $this->basementId,
-            'state'   => 1,
+        (new Device())->insert([
+            'name'       => 'b_lamp',
+            'type'       => 'light',
+            'subtype'    => 'lamp',
+            'room_id'    => $this->basementId,
+            'state'      => 1,
+            'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        $result = $this->makeController()->lights($this->basementId);
+        $result = $this->makeController()->devices($this->basementId);
 
         $this->assertNotNull($result);
         $this->assertCount(1, $result);
         $this->assertArrayHasKey('is_on', $result[0]);
         $this->assertTrue($result[0]['is_on']);
 
-        $this->assertNull($this->makeController()->lights(99999));
+        $this->assertNull($this->makeController()->devices(99999));
     }
 
     /** neighbors() returns neighbor rooms with their state; null for missing room. */

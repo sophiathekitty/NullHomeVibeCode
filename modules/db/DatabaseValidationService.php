@@ -20,7 +20,6 @@ class DatabaseValidationService {
         $modelsDir = dirname(dirname(__DIR__)) . '/models/';
         // Add a new entry here whenever a new Model subclass is created.
         $this->modelFiles = [
-            'LightsModel'    => $modelsDir . 'LightsModel.php',
             'Device'         => $modelsDir . 'Device.php',
             'SettingsModel'  => $modelsDir . 'SettingsModel.php',
             'Room'           => $modelsDir . 'Room.php',
@@ -34,7 +33,6 @@ class DatabaseValidationService {
      * Load, sync, and validate every registered model.
      *
      * After syncing all models, performs safe migrations:
-     *   - Drops the legacy `location` column from `lights` if present.
      *   - Adds a UNIQUE index on `rooms.name` if not present.
      *   - Adds a UNIQUE index on `room_neighbors(room_id, neighbor_id)` if not present.
      *
@@ -72,23 +70,7 @@ class DatabaseValidationService {
 
         // ── Safe post-sync migrations ──────────────────────────────────────────
 
-        // 1. Drop the legacy `location` column from `lights` if it still exists.
-        try {
-            $cols = DB::query('SHOW COLUMNS FROM `lights`')->fetchAll(PDO::FETCH_ASSOC);
-            $colNames = array_column($cols, 'Field');
-            if (in_array('location', $colNames, true)) {
-                DB::connection()->exec('ALTER TABLE `lights` DROP COLUMN `location`');
-            }
-        } catch (Throwable $e) {
-            $anyError = true;
-            $results[] = [
-                'model'  => 'LightsModel',
-                'table'  => 'lights',
-                'status' => 'migration error (drop location): ' . $e->getMessage(),
-            ];
-        }
-
-        // 2. Unique index on rooms.name.
+        // 1. Unique index on rooms.name.
         try {
             $idx = DB::query(
                 "SHOW INDEX FROM `rooms` WHERE Key_name = 'idx_rooms_name'"
@@ -107,7 +89,7 @@ class DatabaseValidationService {
             ];
         }
 
-        // 3. Unique index on room_neighbors(room_id, neighbor_id).
+        // 2. Unique index on room_neighbors(room_id, neighbor_id).
         try {
             $idx = DB::query(
                 "SHOW INDEX FROM `room_neighbors` WHERE Key_name = 'idx_room_neighbors_pair'"
@@ -127,7 +109,7 @@ class DatabaseValidationService {
             ];
         }
 
-        // 4. Unique index on nmap_scans.ip_address.
+        // 3. Unique index on nmap_scans.ip_address.
         try {
             $idx = DB::query(
                 "SHOW INDEX FROM `nmap_scans` WHERE Key_name = 'idx_nmap_scans_ip'"
@@ -146,7 +128,7 @@ class DatabaseValidationService {
             ];
         }
 
-        // 5. Unique index on wemos.mac_address.
+        // 4. Unique index on wemos.mac_address.
         try {
             $idx = DB::query(
                 "SHOW INDEX FROM `wemos` WHERE Key_name = 'idx_wemos_mac'"

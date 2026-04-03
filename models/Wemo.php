@@ -7,8 +7,8 @@ require_once __DIR__ . '/Model.php';
  * Table: wemos
  *
  * Each row represents a discovered Wemo device. The mac_address column
- * is used as the stable identifier across IP address changes. The light_id
- * column links to a corresponding lights row, created automatically on first
+ * is used as the stable identifier across IP address changes. The device_id
+ * column links to a corresponding devices row, created automatically on first
  * discovery and independent thereafter.
  */
 class Wemo extends Model
@@ -78,7 +78,7 @@ class Wemo extends Model
                 'default'  => null,
             ],
             [
-                'name'     => 'light_id',
+                'name'     => 'device_id',
                 'type'     => 'INT UNSIGNED',
                 'length'   => null,
                 'nullable' => true,

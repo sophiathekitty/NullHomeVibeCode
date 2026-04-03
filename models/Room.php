@@ -114,16 +114,16 @@ class Room extends Model
     // ── Relationship helpers ──────────────────────────────────────────────────
 
     /**
-     * Return all lights belonging to this room.
+     * Return all devices belonging to this room with type = 'light'.
      *
      * Filters at the SQL level: room_id = $this->id AND type = 'light'.
      *
      * @return array<int, array<string, mixed>>
      */
-    public function lights(): array
+    public function devices(): array
     {
-        require_once __DIR__ . '/LightsModel.php';
-        return LightsModel::query()
+        require_once __DIR__ . '/Device.php';
+        return Device::query()
             ->where('room_id', $this->id)
             ->where('type', 'light')
             ->get();

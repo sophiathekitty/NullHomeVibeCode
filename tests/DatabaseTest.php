@@ -17,12 +17,6 @@ class DatabaseTest extends BaseTestCase
         $this->assertInstanceOf(PDO::class, DB::connection());
     }
 
-    /** The lights table was created by the validation service. */
-    public function testLightsTableExists(): void
-    {
-        $this->assertTableExists('lights');
-    }
-
     /** The devices table was created by the validation service. */
     public function testDevicesTableExists(): void
     {

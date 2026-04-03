@@ -9,7 +9,7 @@
  */
 
 require_once APP_ROOT . '/models/Wemo.php';
-require_once APP_ROOT . '/models/LightsModel.php';
+require_once APP_ROOT . '/models/Device.php';
 require_once APP_ROOT . '/modules/devices/WemoDriver.php';
 
 class WemoDriverTest extends BaseTestCase
@@ -29,11 +29,11 @@ class WemoDriverTest extends BaseTestCase
         'port'        => 49153,
         'state'       => 0,
         'last_checked' => null,
-        'light_id'    => null,
+        'device_id'   => null,
     ];
 
     /**
-     * Truncate wemos and lights tables before every test.
+     * Truncate wemos and devices tables before every test.
      *
      * @return void
      */
@@ -41,7 +41,7 @@ class WemoDriverTest extends BaseTestCase
     {
         parent::setUp();
         DB::connection()->exec('TRUNCATE TABLE `wemos`');
-        DB::connection()->exec('TRUNCATE TABLE `lights`');
+        DB::connection()->exec('TRUNCATE TABLE `devices`');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -196,19 +196,18 @@ class WemoDriverTest extends BaseTestCase
     // ── observe ───────────────────────────────────────────────────────────────
 
     /**
-     * observe() updates wemo state and last_checked, and syncs the linked light
+     * observe() updates wemo state and last_checked, and syncs the linked device
      * when getBinaryState() returns a valid state.
      *
      * @return void
      */
     public function testObserveUpdatesStateAndLastChecked(): void
     {
-        $lightsModel = new LightsModel();
-        $lightId     = $lightsModel->create([
-            'name'       => 'Wemo Light',
+        $deviceModel = new Device();
+        $deviceId    = $deviceModel->insert([
+            'name'       => 'Wemo Device',
             'type'       => 'light',
             'state'      => 0,
-            'brightness' => 100,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
@@ -219,20 +218,20 @@ class WemoDriverTest extends BaseTestCase
             'ip_address'  => '192.168.1.100',
             'port'        => 49153,
             'state'       => 0,
-            'light_id'    => $lightId,
+            'device_id'   => $deviceId,
         ]);
 
         // Inject a getStateFn that always returns 1 (device is on).
         $getStateFn = fn(array $wemo): ?int => 1;
 
-        WemoDriver::observe($getStateFn, $wemoModel, $lightsModel);
+        WemoDriver::observe($getStateFn, $wemoModel, $deviceModel);
 
-        $wemoRow  = DB::query('SELECT * FROM `wemos` WHERE id = ?', [$wemoId])->fetch(PDO::FETCH_ASSOC);
-        $lightRow = DB::query('SELECT * FROM `lights` WHERE id = ?', [$lightId])->fetch(PDO::FETCH_ASSOC);
+        $wemoRow   = DB::query('SELECT * FROM `wemos` WHERE id = ?', [$wemoId])->fetch(PDO::FETCH_ASSOC);
+        $deviceRow = DB::query('SELECT * FROM `devices` WHERE id = ?', [$deviceId])->fetch(PDO::FETCH_ASSOC);
 
-        $this->assertSame('1', (string) $wemoRow['state'],  'Wemo state must be updated to 1');
-        $this->assertNotNull($wemoRow['last_checked'],        'last_checked must be set after a successful poll');
-        $this->assertSame('1', (string) $lightRow['state'], 'Linked light state must be synced to 1');
+        $this->assertSame('1', (string) $wemoRow['state'],    'Wemo state must be updated to 1');
+        $this->assertNotNull($wemoRow['last_checked'],          'last_checked must be set after a successful poll');
+        $this->assertSame('1', (string) $deviceRow['state'],  'Linked device state must be synced to 1');
     }
 
     /**
@@ -255,7 +254,7 @@ class WemoDriverTest extends BaseTestCase
         // Inject a getStateFn that always returns null (device unreachable).
         $getStateFn = fn(array $wemo): ?int => null;
 
-        WemoDriver::observe($getStateFn, $wemoModel, new LightsModel());
+        WemoDriver::observe($getStateFn, $wemoModel, new Device());
 
         $wemoRow = DB::query(
             'SELECT state, last_checked FROM `wemos` WHERE id = ?',

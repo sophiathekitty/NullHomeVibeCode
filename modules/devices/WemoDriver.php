@@ -1,6 +1,6 @@
 <?php
 require_once APP_ROOT . '/models/Wemo.php';
-require_once APP_ROOT . '/models/LightsModel.php';
+require_once APP_ROOT . '/models/Device.php';
 require_once APP_ROOT . '/models/NmapScan.php';
 require_once APP_ROOT . '/modules/network/NetworkModule.php';
 
@@ -8,7 +8,7 @@ require_once APP_ROOT . '/modules/network/NetworkModule.php';
  * WemoDriver — HTTP-unaware driver for Belkin Wemo smart plug devices.
  *
  * Communicates with Wemo devices via SOAP over HTTP using cURL.
- * All database access goes through the Wemo and LightsModel model instances.
+ * All database access goes through the Wemo and Device model instances.
  * The exec() and cURL calls are injectable via optional callable parameters
  * so that unit tests can supply fake implementations without network access.
  */
@@ -44,7 +44,7 @@ class WemoDriver
      *   4. For each open port, fetches `http://{ip}:{port}/setup.xml` via the
      *      `$fetchFn` callable. Parses `<friendlyName>` and `<macAddress>`.
      *   5. On a valid setup.xml: creates or updates the Wemo record, creates a
-     *      linked Light on first discovery, marks the nmap record 'wemo', and
+     *      linked Device on first discovery, marks the nmap record 'wemo', and
      *      returns `result => 'found_wemo'`. Stops after the first matching port.
      *   6. If no port yields a valid setup.xml, marks as 'other' and returns
      *      `result => 'not_wemo'`.
@@ -57,7 +57,7 @@ class WemoDriver
      * @param callable|null      $portsFn   Optional callable replacing
      *                                      NetworkModule::getOpenPorts() for testing.
      *                                      Signature: (string $ip): array<int, int>
-     * @param LightsModel|null   $lightsModel Optional LightsModel instance for testing.
+     * @param Device|null        $deviceModel Optional Device instance for testing.
      * @return array<string, mixed> Status array with at minimum `done` and `remaining`.
      */
     public static function checkNextIp(
@@ -65,9 +65,9 @@ class WemoDriver
         Wemo $wemoModel,
         ?callable $fetchFn = null,
         ?callable $portsFn = null,
-        ?LightsModel $lightsModel = null
+        ?Device $deviceModel = null
     ): array {
-        $lightsModel ??= new LightsModel();
+        $deviceModel ??= new Device();
 
         $record = $nmapScan->getNextUnchecked();
 
@@ -154,14 +154,19 @@ class WemoDriver
                     $wemoModel->updateWemo((int) $existing['id'], $changes);
                 }
             } else {
-                // First discovery — create Wemo and linked Light.
-                $lightId = $lightsModel->create(['name' => $name]);
+                // First discovery — create Device and linked Wemo.
+                $deviceId = $deviceModel->insert([
+                    'name'       => $name,
+                    'type'       => 'light',
+                    'state'      => 0,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
                 $wemoModel->createWemo([
                     'name'        => $name,
                     'mac_address' => $mac,
                     'ip_address'  => $ip,
                     'port'        => $port,
-                    'light_id'    => $lightId,
+                    'device_id'   => $deviceId,
                 ]);
             }
 
@@ -192,25 +197,25 @@ class WemoDriver
      *
      * Retrieves all wemos from the database, calls getBinaryState() for each,
      * and persists the result via Wemo::updateState(). If the wemo has a linked
-     * light, Light::updateState() is also called to keep the wrapper in sync.
+     * device, Device::update() is also called to keep the wrapper in sync.
      *
      * Devices that fail to respond are skipped; last_checked is only updated
      * on a successful SOAP response.
      *
-     * @param callable|null    $getStateFn  Optional callable replacing getBinaryState()
-     *                                      for testing. Receives the wemo row array and
-     *                                      must return int|null (1, 0, or null on failure).
-     * @param Wemo|null        $wemoModel   Optional Wemo model instance for testing.
-     * @param LightsModel|null $lightsModel Optional LightsModel instance for testing.
+     * @param callable|null  $getStateFn  Optional callable replacing getBinaryState()
+     *                                    for testing. Receives the wemo row array and
+     *                                    must return int|null (1, 0, or null on failure).
+     * @param Wemo|null      $wemoModel   Optional Wemo model instance for testing.
+     * @param Device|null    $deviceModel Optional Device instance for testing.
      * @return void
      */
     public static function observe(
         ?callable $getStateFn = null,
         ?Wemo $wemoModel = null,
-        ?LightsModel $lightsModel = null
+        ?Device $deviceModel = null
     ): void {
         $wemoModel   ??= new Wemo();
-        $lightsModel ??= new LightsModel();
+        $deviceModel ??= new Device();
         $getStateFn  ??= static fn(array $wemo): ?int => static::getBinaryState($wemo);
 
         $wemos = $wemoModel->allWemos();
@@ -224,8 +229,11 @@ class WemoDriver
 
             $wemoModel->updateState((int) $wemo['id'], $state);
 
-            if (!empty($wemo['light_id'])) {
-                $lightsModel->updateState((int) $wemo['light_id'], $state);
+            if (!empty($wemo['device_id'])) {
+                $deviceModel->update((int) $wemo['device_id'], [
+                    'state'      => $state,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
             }
         }
     }

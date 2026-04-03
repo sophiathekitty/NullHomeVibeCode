@@ -5,7 +5,7 @@ require_once __DIR__ . '/../models/RoomNeighbor.php';
 require_once __DIR__ . '/../modules/RoomLighting.php';
 
 /**
- * RoomController — business logic for rooms, their lights, and neighbor relationships.
+ * RoomController — business logic for rooms, their devices, and neighbor relationships.
  *
  * All JSON API responses are handled by the handler layer. This controller
  * returns plain arrays or scalar values and never accesses request globals.
@@ -113,24 +113,24 @@ class RoomController extends Controller
     // ── Sub-resource routes ───────────────────────────────────────────────────
 
     /**
-     * Return all lights (type='light') belonging to the given room.
+     * Return all devices (type='light') belonging to the given room.
      *
-     * Each light row is augmented with an is_on boolean derived from state.
+     * Each device row is augmented with an is_on boolean derived from state.
      * Returns null if the room does not exist.
      *
      * @param int $id The room's primary key.
      * @return array<int, array<string, mixed>>|null
      */
-    public function lights(int $id): ?array
+    public function devices(int $id): ?array
     {
         $room = Room::findById($id);
         if ($room === null) {
             return null;
         }
-        $rows = $room->lights();
-        return array_map(function (array $light): array {
-            $light['is_on'] = (bool) $light['state'];
-            return $light;
+        $rows = $room->devices();
+        return array_map(function (array $device): array {
+            $device['is_on'] = (bool) $device['state'];
+            return $device;
         }, $rows);
     }
 

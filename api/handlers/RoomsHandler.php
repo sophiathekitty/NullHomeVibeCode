@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../controllers/RoomController.php';
  *   GET    /api/rooms/{id}                         → single room with state
  *   PUT    /api/rooms/{id}                         → update a room
  *   DELETE /api/rooms/{id}                         → delete a room
- *   GET    /api/rooms/{id}/lights                  → lights in the room
+ *   GET    /api/rooms/{id}/devices               → devices in the room
  *   GET    /api/rooms/{id}/neighbors               → neighbors with state
  *   POST   /api/rooms/{id}/neighbors               → add a neighbor relationship
  *   DELETE /api/rooms/{id}/neighbors/{neighborId}  → remove a neighbor relationship
@@ -40,7 +40,7 @@ class RoomsHandler extends ApiHandler
     public function handle(array $params, string $method, array $body): void
     {
         // $params[0] = optional room id
-        // $params[1] = optional sub-resource ("lights" or "neighbors")
+        // $params[1] = optional sub-resource ("devices" or "neighbors")
         // $params[2] = optional sub-resource id (neighbor id for DELETE)
         $id      = isset($params[0]) && is_numeric($params[0]) ? (int) $params[0] : null;
         $sub     = $params[1] ?? null;
@@ -66,18 +66,18 @@ class RoomsHandler extends ApiHandler
             return;
         }
 
-        // ── Sub-resource: lights ──────────────────────────────────────────────
-        if ($sub === 'lights') {
+        // ── Sub-resource: devices ─────────────────────────────────────────────
+        if ($sub === 'devices') {
             if ($method !== 'GET') {
                 $this->methodNotAllowed();
                 return;
             }
-            $lights = $this->controller->lights($id);
-            if ($lights === null) {
+            $devices = $this->controller->devices($id);
+            if ($devices === null) {
                 $this->notFound("Room $id not found");
                 return;
             }
-            $this->ok($lights);
+            $this->ok($devices);
             return;
         }
 

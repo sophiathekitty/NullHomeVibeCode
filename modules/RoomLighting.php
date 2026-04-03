@@ -4,8 +4,8 @@ require_once __DIR__ . '/../models/Room.php';
 /**
  * RoomLighting — HTTP-unaware service for querying lighting state of a room and its neighbors.
  *
- * All state calculations derive from the last_state_change column stored on
- * lights rows — no log table queries are performed.
+ * All state calculations derive from the updated_at column stored on
+ * devices rows — no log table queries are performed.
  * All filtering (type = 'light', room scoping) happens at the SQL level.
  *
  * This class has no knowledge of HTTP. It may be called from controllers,
@@ -14,7 +14,7 @@ require_once __DIR__ . '/../models/Room.php';
 class RoomLighting
 {
     /**
-     * Return true if the room has at least one light (type='light') currently on.
+     * Return true if the room has at least one device (type='light') currently on.
      *
      * @param Room $room The room to check.
      * @return bool
@@ -22,7 +22,7 @@ class RoomLighting
     public function isBright(Room $room): bool
     {
         $count = (int) DB::query(
-            'SELECT COUNT(*) FROM `lights`
+            'SELECT COUNT(*) FROM `devices`
               WHERE `room_id` = ? AND `type` = ? AND `state` = 1',
             [$room->id, 'light']
         )->fetchColumn();
@@ -34,17 +34,17 @@ class RoomLighting
      * Return how many seconds the room has been continuously in its current
      * state (bright or dark).
      *
-     * Derived from MAX(last_state_change) on lights where type='light' and
-     * room_id = $room->id. Returns 0 if no lights are associated with the room
-     * or if last_state_change is NULL for all lights.
+     * Derived from MAX(updated_at) on devices where type='light' and
+     * room_id = $room->id. Returns 0 if no devices are associated with the room
+     * or if updated_at is NULL for all devices.
      *
      * @param Room $room The room to check.
-     * @return int Seconds since the most recent state change among the room's lights.
+     * @return int Seconds since the most recent state change among the room's devices.
      */
     public function secondsSinceStateChange(Room $room): int
     {
         $maxTs = DB::query(
-            'SELECT MAX(`last_state_change`) FROM `lights`
+            'SELECT MAX(`updated_at`) FROM `devices`
               WHERE `room_id` = ? AND `type` = ?',
             [$room->id, 'light']
         )->fetchColumn();
@@ -71,11 +71,11 @@ class RoomLighting
                FROM `rooms` AS neighbor_room
                INNER JOIN `room_neighbors` rn
                  ON (rn.room_id = neighbor_room.id OR rn.neighbor_id = neighbor_room.id)
-               INNER JOIN `lights` l ON l.room_id = neighbor_room.id
+               INNER JOIN `devices` d ON d.room_id = neighbor_room.id
               WHERE (rn.room_id = ? OR rn.neighbor_id = ?)
                 AND neighbor_room.id != ?
-                AND l.type = ?
-                AND l.state = 1',
+                AND d.type = ?
+                AND d.state = 1',
             [$room->id, $room->id, $room->id, 'light']
         )->fetchColumn();
     }
@@ -84,8 +84,8 @@ class RoomLighting
      * Return how many seconds the neighbor aggregate state has been stable.
      *
      * "Neighbor state" = whether any neighbor is currently bright.
-     * Derived from MAX(last_state_change) across all lights in all neighbor rooms.
-     * Returns 0 if no neighbor lights have a last_state_change recorded.
+     * Derived from MAX(updated_at) across all devices in all neighbor rooms.
+     * Returns 0 if no neighbor devices have an updated_at recorded.
      *
      * @param Room $room The room whose neighbors are examined.
      * @return int
@@ -93,13 +93,13 @@ class RoomLighting
     public function secondsSinceNeighborStateChange(Room $room): int
     {
         $maxTs = DB::query(
-            'SELECT MAX(l.last_state_change)
-               FROM `lights` l
+            'SELECT MAX(d.updated_at)
+               FROM `devices` d
                INNER JOIN `room_neighbors` rn
-                 ON (rn.room_id = l.room_id OR rn.neighbor_id = l.room_id)
+                 ON (rn.room_id = d.room_id OR rn.neighbor_id = d.room_id)
               WHERE (rn.room_id = ? OR rn.neighbor_id = ?)
-                AND l.room_id != ?
-                AND l.type = ?',
+                AND d.room_id != ?
+                AND d.type = ?',
             [$room->id, $room->id, $room->id, 'light']
         )->fetchColumn();
 

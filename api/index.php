@@ -4,8 +4,8 @@
  * to the appropriate handler class.
  *
  * URL parsing:
- *   /api/lights/1/toggle  →  handler = "lights", params = ["1", "toggle"]
- *   /api/lights           →  handler = "lights", params = []
+ *   /api/devices/1/toggle  →  handler = "devices", params = ["1", "toggle"]
+ *   /api/devices           →  handler = "devices", params = []
  *
  * All responses follow the JSON envelope:
  *   { "success": bool, "data": mixed, "error": string|null }
@@ -53,7 +53,7 @@ $body    = json_decode($rawBody, true) ?? [];
 
 // Handler registry — maps resource name to handler class file + class name
 $handlers = [
-    'lights'   => __DIR__ . '/handlers/LightsHandler.php',
+    'devices'  => __DIR__ . '/handlers/DevicesHandler.php',
     'settings' => __DIR__ . '/handlers/SettingsHandler.php',
     'rooms'    => __DIR__ . '/handlers/RoomsHandler.php',
     'scan'     => __DIR__ . '/handlers/ScanHandler.php',

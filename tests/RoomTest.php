@@ -170,10 +170,11 @@ class RoomTest extends BaseTestCase
             'state'      => 0,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
-        // Non-light device type in basement — should NOT appear.
+        // Non-light device type (type='device') in basement — should NOT appear.
         $deviceStub->insert([
             'name'       => 'basement_fan',
             'type'       => 'device',
+            'subtype'    => 'fan',
             'room_id'    => $this->basementId,
             'state'      => 0,
             'updated_at' => date('Y-m-d H:i:s'),
@@ -316,12 +317,13 @@ class RoomTest extends BaseTestCase
         $this->assertTrue($service->isBright($room));
     }
 
-    /** isBright() ignores non-light devices (type != 'light'). */
+    /** isBright() ignores non-light devices (type='device'). */
     public function testIsBrightIgnoresNonLightDevices(): void
     {
         (new Device())->insert([
-            'name'       => 'fan',
+            'name'       => 'basement_fan',
             'type'       => 'device',
+            'subtype'    => 'fan',
             'room_id'    => $this->basementId,
             'state'      => 1,
             'updated_at' => date('Y-m-d H:i:s'),

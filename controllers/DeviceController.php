@@ -160,6 +160,9 @@ class DeviceController extends Controller
     /**
      * Set the brightness for a device.
      *
+     * Delegates directly to Device::setBrightness(), which throws
+     * InvalidArgumentException for values outside 0–100.
+     *
      * @param int $id         The device's primary key.
      * @param int $brightness Value between 0 and 100 inclusive.
      * @return array<string, mixed>|null The updated device, or null if not found.
@@ -172,7 +175,6 @@ class DeviceController extends Controller
         if ($device === null) {
             return null;
         }
-        $brightness = max(0, min(100, $brightness));
         $device->setBrightness($brightness);
         return Device::findById($id)?->toArray();
     }

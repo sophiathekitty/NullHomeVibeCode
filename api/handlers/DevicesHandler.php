@@ -70,9 +70,9 @@ class DevicesHandler extends ApiHandler
 
                 $this->ok($this->controller->create(
                     $name,
-                    $type ?: 'light',
-                    $subtype ?: null,
-                    $color ?: null,
+                    $type,
+                    $subtype,
+                    $color,
                     $roomId,
                     $brightness
                 ));

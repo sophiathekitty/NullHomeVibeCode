@@ -43,7 +43,7 @@ class Device extends Model
     /** @var string|null Functional subtype, e.g. 'ceiling', 'fan'. Nullable. */
     protected ?string $subtype = null;
 
-    /** @var string|null Hex colour string, e.g. '#ff8800'. Only meaningful for type = light. */
+    /** @var string|null Hex color string, e.g. '#ff8800'. Only meaningful for type = light. */
     protected ?string $color = null;
 
     /** @var int|null FK to rooms.id. Nullable; no FK constraint until rooms table is established. */
@@ -359,7 +359,7 @@ class Device extends Model
     }
 
     /**
-     * Return the hex colour string (e.g. '#ff8800'), or null if not set.
+     * Return the hex color string (e.g. '#ff8800'), or null if not set.
      *
      * @return string|null
      */

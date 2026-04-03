@@ -54,6 +54,7 @@ $body    = json_decode($rawBody, true) ?? [];
 // Handler registry — maps resource name to handler class file + class name
 $handlers = [
     'lights'   => __DIR__ . '/handlers/LightsHandler.php',
+    'devices'  => __DIR__ . '/handlers/DevicesHandler.php',
     'settings' => __DIR__ . '/handlers/SettingsHandler.php',
     'rooms'    => __DIR__ . '/handlers/RoomsHandler.php',
     'scan'     => __DIR__ . '/handlers/ScanHandler.php',

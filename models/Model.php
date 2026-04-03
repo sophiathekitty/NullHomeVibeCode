@@ -89,9 +89,16 @@ abstract class Model {
         DB::query("UPDATE `{$this->getTable()}` SET $set WHERE id = ?", $values);
     }
 
-    /** Delete a row by id. */
-    public function delete(int $id): void {
+    /**
+     * Delete a row by id.
+     *
+     * @param int $id Primary key of the row to delete.
+     * @return bool True if a row was deleted, false if no matching row existed.
+     * @throws \PDOException If the database query fails.
+     */
+    public function delete(int $id): bool {
         DB::sync($this);
-        DB::query("DELETE FROM `{$this->getTable()}` WHERE id = ?", [$id]);
+        $stmt = DB::query("DELETE FROM `{$this->getTable()}` WHERE id = ?", [$id]);
+        return $stmt->rowCount() > 0;
     }
 }

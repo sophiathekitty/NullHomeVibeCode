@@ -21,6 +21,7 @@ class DatabaseValidationService {
         // Add a new entry here whenever a new Model subclass is created.
         $this->modelFiles = [
             'LightsModel'    => $modelsDir . 'LightsModel.php',
+            'Device'         => $modelsDir . 'Device.php',
             'SettingsModel'  => $modelsDir . 'SettingsModel.php',
             'Room'           => $modelsDir . 'Room.php',
             'RoomNeighbor'   => $modelsDir . 'RoomNeighbor.php',

@@ -23,6 +23,12 @@ class DatabaseTest extends BaseTestCase
         $this->assertTableExists('lights');
     }
 
+    /** The devices table was created by the validation service. */
+    public function testDevicesTableExists(): void
+    {
+        $this->assertTableExists('devices');
+    }
+
     /** The settings table was created by the validation service. */
     public function testSettingsTableExists(): void
     {

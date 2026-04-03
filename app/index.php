@@ -96,16 +96,40 @@
     </div>
 </div>
 
+<!-- room-card template -->
+<template id="room-card">
+    <div class="room-card">
+        <h2 class="room-card-title"></h2>
+    </div>
+</template>
+
 <!-- Main content -->
 <main class="rooms-container" id="roomsContainer">
     <!-- populated by JS -->
 </main>
 
+<!-- framework -->
+<script src="/public/js/app-events.js"></script>
+<script src="/public/js/models/base-model.js"></script>
+<script src="/public/js/views/base-view.js"></script>
+<script src="/public/js/controllers/base-controller.js"></script>
+
+<!-- models -->
+<script src="/public/js/models/room-model.js"></script>
+
+<!-- views -->
+<script src="/public/js/views/room-view.js"></script>
+
+<!-- controllers -->
+<script src="/public/js/controllers/room-controller.js"></script>
+
+<!-- modules -->
 <script src="/public/js/menu.js"></script>
-<script src="/public/js/rooms.js"></script>
 <script src="/public/js/room-form.js"></script>
 <script src="/public/js/room-remove.js"></script>
 <script src="/public/js/wemo-scan.js"></script>
+
+<!-- bootstrap (must be last) -->
 <script src="/public/js/app.js"></script>
 </body>
 </html>

@@ -19,7 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
         function (updated) { roomController.setRooms(updated); }
     );
     initWemoScan();
-    initDbValidate();
+
+    var validationController = new ValidationController();
+    validationController.init();
 
     AppEvents.emit('app:ready', {});
 });

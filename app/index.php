@@ -129,6 +129,23 @@
     </div>
 </div>
 
+<!-- DB Validate result row template -->
+<template id="db-validate-result-row">
+    <div class="db-validate-result-row">
+        <span class="db-validate-result-model"></span>
+        <span class="db-validate-result-table"></span>
+        <span class="db-validate-result-status"></span>
+    </div>
+</template>
+
+<!-- DB Validate orphan item template -->
+<template id="db-validate-orphan-item">
+    <li class="db-validate-orphan-item">
+        <input type="checkbox" checked>
+        <label></label>
+    </li>
+</template>
+
 <!-- room-card template -->
 <template id="room-card">
     <div class="room-card">
@@ -149,19 +166,21 @@
 
 <!-- models -->
 <script src="/public/js/models/room-model.js"></script>
+<script src="/public/js/models/validation-model.js"></script>
 
 <!-- views -->
 <script src="/public/js/views/room-view.js"></script>
+<script src="/public/js/views/validation-view.js"></script>
 
 <!-- controllers -->
 <script src="/public/js/controllers/room-controller.js"></script>
+<script src="/public/js/controllers/validation-controller.js"></script>
 
 <!-- modules -->
 <script src="/public/js/menu.js"></script>
 <script src="/public/js/room-form.js"></script>
 <script src="/public/js/room-remove.js"></script>
 <script src="/public/js/wemo-scan.js"></script>
-<script src="/public/js/db-validate.js"></script>
 
 <!-- bootstrap (must be last) -->
 <script src="/public/js/app.js"></script>

@@ -24,6 +24,7 @@ if (!file_exists($configFile)) {
 }
 require_once $configFile;
 require_once __DIR__ . '/../modules/db/DB.php';
+require_once __DIR__ . '/../modules/Debug.php';
 require_once __DIR__ . '/handlers/ApiHandler.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -50,6 +51,11 @@ $params   = $segments;
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $rawBody = file_get_contents('php://input');
 $body    = json_decode($rawBody, true) ?? [];
+
+// Enable debug output collection if ?debug=1 is present in the query string.
+if (!empty($_GET['debug']) && $_GET['debug'] === '1') {
+    Debug::enable();
+}
 
 // Handler registry — maps resource name to handler class file + class name
 $handlers = [

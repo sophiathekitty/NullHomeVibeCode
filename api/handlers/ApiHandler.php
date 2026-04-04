@@ -41,11 +41,15 @@ abstract class ApiHandler {
 
     private function respond(bool $success, mixed $data, ?string $error): void {
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
+        $response = [
             'success' => $success,
             'data'    => $data,
             'error'   => $error,
-        ]);
+        ];
+        if (class_exists('Debug') && Debug::isEnabled()) {
+            $response['debug'] = Debug::getEntries();
+        }
+        echo json_encode($response);
         exit;
     }
 }

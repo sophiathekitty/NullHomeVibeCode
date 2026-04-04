@@ -7,15 +7,15 @@
  *
  * Add recurring one-minute tasks here.
  */
+define('APP_ROOT', dirname(__DIR__));
+require_once APP_ROOT . '/config.php';
+define('NULLHOME_SERVICE', 'every_minute');
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../modules/db/DB.php';
-require_once APP_ROOT . '/modules/devices/WemoDriver.php';
+require_once APP_ROOT . '/modules/Debug.php';
 
-// Example: log a heartbeat timestamp so we know the service is running.
-$timestamp = date('Y-m-d H:i:s');
-echo "[every_minute] tick at $timestamp\n";
+Debug::startService();
 
-// Poll all known Wemo devices and sync their state to the database.
-WemoDriver::observe();
+// TODO: automation engine
+
+Debug::completeService();
 

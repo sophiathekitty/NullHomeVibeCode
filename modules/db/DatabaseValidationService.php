@@ -19,6 +19,7 @@ class DatabaseValidationService {
     public function __construct() {
         $modelsDir = dirname(dirname(__DIR__)) . '/models/';
         // Add a new entry here whenever a new Model subclass is created.
+        // Service must be registered before ServiceLog (FK dependency).
         $this->modelFiles = [
             'Device'         => $modelsDir . 'Device.php',
             'SettingsModel'  => $modelsDir . 'SettingsModel.php',
@@ -26,6 +27,8 @@ class DatabaseValidationService {
             'RoomNeighbor'   => $modelsDir . 'RoomNeighbor.php',
             'NmapScan'       => $modelsDir . 'NmapScan.php',
             'Wemo'           => $modelsDir . 'Wemo.php',
+            'Service'        => $modelsDir . 'Service.php',
+            'ServiceLog'     => $modelsDir . 'ServiceLog.php',
         ];
     }
 
@@ -144,6 +147,78 @@ class DatabaseValidationService {
                 'model'  => 'Wemo',
                 'table'  => 'wemos',
                 'status' => 'migration error (unique idx mac): ' . $e->getMessage(),
+            ];
+        }
+
+        // 5. Unique index on services.name.
+        try {
+            $idx = DB::query(
+                "SHOW INDEX FROM `services` WHERE Key_name = 'idx_services_name'"
+            )->fetchAll();
+            if (empty($idx)) {
+                DB::connection()->exec(
+                    'CREATE UNIQUE INDEX `idx_services_name` ON `services` (`name`)'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError = true;
+            $results[] = [
+                'model'  => 'Service',
+                'table'  => 'services',
+                'status' => 'migration error (unique idx name): ' . $e->getMessage(),
+            ];
+        }
+
+        // 6. Seed services table with default rows if not already present.
+        $seedServices = [
+            ['name' => 'every_minute', 'retention_days' => 1],
+            ['name' => 'every_hour',   'retention_days' => 7],
+            ['name' => 'every_day',    'retention_days' => 30],
+            ['name' => 'every_month',  'retention_days' => 365],
+        ];
+        foreach ($seedServices as $seed) {
+            try {
+                $exists = DB::query(
+                    'SELECT COUNT(*) FROM `services` WHERE `name` = ?',
+                    [$seed['name']]
+                )->fetchColumn();
+                if ((int) $exists === 0) {
+                    DB::query(
+                        'INSERT INTO `services` (`name`, `retention_days`) VALUES (?, ?)',
+                        [$seed['name'], $seed['retention_days']]
+                    );
+                }
+            } catch (Throwable $e) {
+                $anyError = true;
+                $results[] = [
+                    'model'  => 'Service',
+                    'table'  => 'services',
+                    'status' => 'seed error (' . $seed['name'] . '): ' . $e->getMessage(),
+                ];
+            }
+        }
+
+        // 7. Foreign key on service_logs.service_id → services.id (if not present).
+        try {
+            $fk = DB::query(
+                "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+                  WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'service_logs'
+                    AND CONSTRAINT_NAME = 'fk_service_logs_service_id'"
+            )->fetchColumn();
+            if ((int) $fk === 0) {
+                DB::connection()->exec(
+                    'ALTER TABLE `service_logs`'
+                    . ' ADD CONSTRAINT `fk_service_logs_service_id`'
+                    . ' FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE CASCADE'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError = true;
+            $results[] = [
+                'model'  => 'ServiceLog',
+                'table'  => 'service_logs',
+                'status' => 'migration error (fk service_id): ' . $e->getMessage(),
             ];
         }
 

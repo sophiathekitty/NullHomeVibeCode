@@ -153,7 +153,7 @@ class ValidationHandlerTestDouble extends ValidationHandler
         $skipped = [];
 
         $orphans      = $this->detectOrphanTablesPublic();
-        $modelTables  = $this->getModelTables();
+        $modelTables  = $this->modelTables;
 
         foreach ($tables as $table) {
             $table = (string) $table;
@@ -205,34 +205,14 @@ class ValidationHandlerTestDouble extends ValidationHandler
             'SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()'
         );
         $allTables   = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $modelTables = $this->getModelTables();
 
         $orphans = [];
         foreach ($allTables as $table) {
-            if (!in_array($table, $modelTables, true)) {
+            if (!in_array($table, $this->modelTables, true)) {
                 $orphans[] = $table;
             }
         }
         return $orphans;
-    }
-
-    /**
-     * Return the list of model-registered table names.
-     *
-     * @return list<string>
-     */
-    private function getModelTables(): array
-    {
-        return [
-            'devices',
-            'settings',
-            'rooms',
-            'room_neighbors',
-            'nmap_scans',
-            'wemos',
-            'services',
-            'service_logs',
-        ];
     }
 
     /**

@@ -16,7 +16,7 @@ class ValidationHandler extends ApiHandler
      *
      * @var list<string>
      */
-    private array $modelTables = [
+    protected array $modelTables = [
         'devices',
         'settings',
         'rooms',
@@ -115,6 +115,13 @@ class ValidationHandler extends ApiHandler
 
         foreach ($tables as $table) {
             $table = (string) $table;
+
+            // Reject table names that contain anything other than word characters.
+            // This guards against backtick injection in the DROP TABLE statement.
+            if (!preg_match('/^\w+$/', $table)) {
+                $errors[] = ['table' => $table, 'error' => 'Invalid table name.'];
+                continue;
+            }
 
             // Refuse to drop any model-registered table.
             if (in_array($table, $this->modelTables, true)) {

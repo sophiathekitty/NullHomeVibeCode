@@ -204,7 +204,7 @@ class ServiceLogTest extends BaseTestCase
      *
      * @return void
      */
-    public function testCompleteSetCompletedAt(): void
+    public function testCompleteSetsCompletedAt(): void
     {
         $log = new ServiceLog();
         $id  = $log->start($this->serviceId);

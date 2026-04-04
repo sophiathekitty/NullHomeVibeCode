@@ -7,16 +7,15 @@
  *
  * Add tasks here that should run once per hour.
  */
+define('APP_ROOT', dirname(__DIR__));
+require_once APP_ROOT . '/config.php';
+define('NULLHOME_SERVICE', 'every_hour');
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../modules/db/DB.php';
-require_once __DIR__ . '/../models/SettingsModel.php';
+require_once APP_ROOT . '/modules/Debug.php';
 
-$timestamp = date('Y-m-d H:i:s');
-echo "[every_hour] tick at $timestamp\n";
+Debug::startService();
 
 // TODO: Add hourly tasks here.
-// Examples:
-//   - Generate hourly energy usage summaries
-//   - Rotate logs
-//   - Send status notifications
+
+Debug::completeService();
+

@@ -64,7 +64,7 @@ class ValidationView extends BaseView {
                 var lbl  = node.querySelector('label');
                 cb.id        = 'orphan-cb-' + table;
                 cb.value     = table;
-                lbl.htmlFor     = 'orphan-cb-' + table;
+                lbl.htmlFor = 'orphan-cb-' + table;
                 lbl.textContent = table;
                 self._orphanContainer.appendChild(node);
             });

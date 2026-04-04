@@ -46,7 +46,7 @@ class ServiceLog extends Model
         return [
             [
                 'name'     => 'service_id',
-                'type'     => 'INT',
+                'type'     => 'INT UNSIGNED',
                 'length'   => null,
                 'nullable' => false,
                 'default'  => null,

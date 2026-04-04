@@ -126,7 +126,7 @@ class ValidationHandlerTestDouble extends ValidationHandler
      */
     public function exposedDetectOrphanTables(): array
     {
-        return $this->detectOrphanTablesPublic();
+        return $this->detectOrphanTablesImpl();
     }
 
     /**
@@ -152,7 +152,7 @@ class ValidationHandlerTestDouble extends ValidationHandler
         $errors  = [];
         $skipped = [];
 
-        $orphans      = $this->detectOrphanTablesPublic();
+        $orphans      = $this->detectOrphanTablesImpl();
         $modelTables  = $this->modelTables;
 
         foreach ($tables as $table) {
@@ -189,7 +189,7 @@ class ValidationHandlerTestDouble extends ValidationHandler
 
         return [
             'results'       => $result['results'],
-            'orphan_tables' => $this->detectOrphanTablesPublic(),
+            'orphan_tables' => $this->detectOrphanTablesImpl(),
             'has_errors'    => !$result['success'],
         ];
     }
@@ -199,7 +199,7 @@ class ValidationHandlerTestDouble extends ValidationHandler
      *
      * @return list<string>
      */
-    private function detectOrphanTablesPublic(): array
+    private function detectOrphanTablesImpl(): array
     {
         $stmt = DB::query(
             'SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()'

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/public/css/main.css">
     <link rel="stylesheet" href="/public/css/rooms.css">
     <link rel="stylesheet" href="/public/css/wemo-scan.css">
+    <link rel="stylesheet" href="/public/css/db-validate.css">
 </head>
 <body>
 
@@ -38,6 +39,7 @@
         <li><button id="openAddRoom">Add Room</button></li>
         <li><button id="openRemoveRoom">Remove Room</button></li>
         <li><button id="openWemoScan">Scan for Wemos</button></li>
+        <li><button id="openDbValidate">Validate DB</button></li>
     </ul>
 </nav>
 
@@ -96,6 +98,37 @@
     </div>
 </div>
 
+<!-- DB Validation overlay -->
+<div class="modal-overlay wemo-scan-overlay" id="dbValidateOverlay" hidden>
+    <div class="modal wemo-scan-modal db-validate-modal">
+        <h2>Validate Database</h2>
+
+        <div class="db-validate-status" id="dbValidateStatus">Ready</div>
+
+        <div class="db-validate-results" id="dbValidateResults" hidden>
+            <!-- populated by JS -->
+        </div>
+
+        <div id="dbValidateOrphanSection" hidden>
+            <p class="db-validate-section-title">Orphan tables (no model)</p>
+            <ul class="db-validate-orphan-list" id="dbValidateOrphanList">
+                <!-- populated by JS -->
+            </ul>
+        </div>
+
+        <div class="db-validate-feedback" id="dbValidateFeedback" hidden>
+            <!-- populated by JS -->
+        </div>
+
+        <div class="modal-actions">
+            <button id="dbValidateRun">Run Validation</button>
+            <button id="dbValidateDelete" hidden>Delete Selected</button>
+            <button id="dbValidateRefresh" hidden>Refresh</button>
+            <button id="dbValidateClose">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- room-card template -->
 <template id="room-card">
     <div class="room-card">
@@ -128,6 +161,7 @@
 <script src="/public/js/room-form.js"></script>
 <script src="/public/js/room-remove.js"></script>
 <script src="/public/js/wemo-scan.js"></script>
+<script src="/public/js/db-validate.js"></script>
 
 <!-- bootstrap (must be last) -->
 <script src="/public/js/app.js"></script>

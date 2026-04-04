@@ -20,5 +20,8 @@ document.addEventListener('DOMContentLoaded', function () {
     );
     initWemoScan();
 
+    var validationController = new ValidationController();
+    validationController.init();
+
     AppEvents.emit('app:ready', {});
 });

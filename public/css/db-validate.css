@@ -1,0 +1,127 @@
+/* NullHome — DB validation overlay styles */
+
+/* ── Validation modal ────────────────────────────────── */
+
+.db-validate-modal {
+    width: min(90vw, 480px);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* ── Status line ─────────────────────────────────────── */
+
+.db-validate-status {
+    font-size: 0.88rem;
+    color: var(--muted);
+    min-height: 1.25em;
+}
+
+/* ── Results table ───────────────────────────────────── */
+
+.db-validate-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.db-validate-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.65rem;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    gap: 0.5rem;
+}
+
+.db-validate-result-model {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 7rem;
+}
+
+.db-validate-result-table {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: monospace;
+    flex: 1;
+}
+
+.db-validate-result-status {
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.db-validate-result-status.ok {
+    color: var(--on-color);
+}
+
+.db-validate-result-status.err {
+    color: var(--danger);
+}
+
+/* ── Section heading ─────────────────────────────────── */
+
+.db-validate-section-title {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+/* ── Orphan tables checkbox list ─────────────────────── */
+
+.db-validate-orphan-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0;
+    margin: 0;
+    max-height: 20vh;
+    overflow-y: auto;
+}
+
+.db-validate-orphan-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.65rem;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.db-validate-orphan-item input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.db-validate-orphan-item label {
+    font-size: 0.85rem;
+    font-family: monospace;
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* ── Deleted / skipped feedback ──────────────────────── */
+
+.db-validate-feedback {
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.db-validate-feedback .deleted {
+    color: var(--on-color);
+}
+
+.db-validate-feedback .err {
+    color: var(--danger);
+}

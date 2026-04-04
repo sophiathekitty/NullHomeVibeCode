@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/public/css/main.css">
     <link rel="stylesheet" href="/public/css/rooms.css">
     <link rel="stylesheet" href="/public/css/wemo-scan.css">
+    <link rel="stylesheet" href="/public/css/db-validate.css">
 </head>
 <body>
 
@@ -38,6 +39,7 @@
         <li><button id="openAddRoom">Add Room</button></li>
         <li><button id="openRemoveRoom">Remove Room</button></li>
         <li><button id="openWemoScan">Scan for Wemos</button></li>
+        <li><button id="openDbValidate">Validate DB</button></li>
     </ul>
 </nav>
 
@@ -96,6 +98,54 @@
     </div>
 </div>
 
+<!-- DB Validation overlay -->
+<div class="modal-overlay wemo-scan-overlay" id="dbValidateOverlay" hidden>
+    <div class="modal wemo-scan-modal db-validate-modal">
+        <h2>Validate Database</h2>
+
+        <div class="db-validate-status" id="dbValidateStatus">Ready</div>
+
+        <div class="db-validate-results" id="dbValidateResults" hidden>
+            <!-- populated by JS -->
+        </div>
+
+        <div id="dbValidateOrphanSection" hidden>
+            <p class="db-validate-section-title">Orphan tables (no model)</p>
+            <ul class="db-validate-orphan-list" id="dbValidateOrphanList">
+                <!-- populated by JS -->
+            </ul>
+        </div>
+
+        <div class="db-validate-feedback" id="dbValidateFeedback" hidden>
+            <!-- populated by JS -->
+        </div>
+
+        <div class="modal-actions">
+            <button id="dbValidateRun">Run Validation</button>
+            <button id="dbValidateDelete" hidden>Delete Selected</button>
+            <button id="dbValidateRefresh" hidden>Refresh</button>
+            <button id="dbValidateClose">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- DB Validate result row template -->
+<template id="db-validate-result-row">
+    <div class="db-validate-result-row">
+        <span class="db-validate-result-model"></span>
+        <span class="db-validate-result-table"></span>
+        <span class="db-validate-result-status"></span>
+    </div>
+</template>
+
+<!-- DB Validate orphan item template -->
+<template id="db-validate-orphan-item">
+    <li class="db-validate-orphan-item">
+        <input type="checkbox" checked>
+        <label></label>
+    </li>
+</template>
+
 <!-- room-card template -->
 <template id="room-card">
     <div class="room-card">
@@ -116,12 +166,15 @@
 
 <!-- models -->
 <script src="/public/js/models/room-model.js"></script>
+<script src="/public/js/models/validation-model.js"></script>
 
 <!-- views -->
 <script src="/public/js/views/room-view.js"></script>
+<script src="/public/js/views/validation-view.js"></script>
 
 <!-- controllers -->
 <script src="/public/js/controllers/room-controller.js"></script>
+<script src="/public/js/controllers/validation-controller.js"></script>
 
 <!-- modules -->
 <script src="/public/js/menu.js"></script>

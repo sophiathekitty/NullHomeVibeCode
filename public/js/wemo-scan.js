@@ -237,3 +237,5 @@ function initWemoScan() {
 
     btnClose.addEventListener('click', closeOverlay);
 }
+
+if (typeof module !== 'undefined') { module.exports = { initWemoScan: initWemoScan }; }

@@ -89,3 +89,5 @@ class BaseModel {
         return json.data;
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = BaseModel; }

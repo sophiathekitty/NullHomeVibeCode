@@ -233,3 +233,5 @@ class ValidationView extends BaseView {
         this._btnRefresh.hidden      = true;
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = ValidationView; }

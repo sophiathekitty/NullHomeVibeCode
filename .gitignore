@@ -9,3 +9,7 @@ vendor/
 
 # PHPUnit result cache
 .phpunit.result.cache
+
+# Node.js dependencies and coverage
+node_modules/
+coverage/

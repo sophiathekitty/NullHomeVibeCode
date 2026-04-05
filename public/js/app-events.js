@@ -56,3 +56,5 @@ class AppEvents {
         });
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = AppEvents; }

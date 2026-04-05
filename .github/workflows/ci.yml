@@ -53,3 +53,26 @@ jobs:
 
       - name: Run PHPUnit tests
         run: ./vendor/bin/phpunit --testdox
+
+  js-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Jest tests
+        run: npm test

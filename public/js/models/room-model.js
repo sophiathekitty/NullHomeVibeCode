@@ -22,3 +22,5 @@ class RoomModel extends BaseModel {
         return this.get();
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = RoomModel; }

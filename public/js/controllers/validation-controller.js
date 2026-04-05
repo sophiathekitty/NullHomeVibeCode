@@ -120,3 +120,5 @@ class ValidationController extends BaseController {
         }
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = ValidationController; }

@@ -41,3 +41,5 @@ function initMenu() {
     drawerClose.addEventListener('click', closeDrawer);
     drawerOverlay.addEventListener('click', closeDrawer);
 }
+
+if (typeof module !== 'undefined') { module.exports = { initMenu: initMenu }; }

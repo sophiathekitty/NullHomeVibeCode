@@ -1,0 +1,31 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "jest": true,
+        "node": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 2022
+    },
+    "globals": {
+        "AppEvents": "readonly",
+        "BaseModel": "readonly",
+        "BaseView": "readonly",
+        "BaseController": "readonly",
+        "RoomModel": "readonly",
+        "RoomView": "readonly",
+        "RoomController": "readonly",
+        "ValidationModel": "readonly",
+        "ValidationView": "readonly",
+        "ValidationController": "readonly",
+        "initMenu": "readonly",
+        "initRoomForm": "readonly",
+        "initRoomRemove": "readonly",
+        "initWemoScan": "readonly"
+    },
+    "rules": {
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    }
+}

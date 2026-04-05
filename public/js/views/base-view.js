@@ -42,3 +42,5 @@ class BaseView {
         throw new Error('BaseView.render() must be implemented by subclass.');
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = BaseView; }

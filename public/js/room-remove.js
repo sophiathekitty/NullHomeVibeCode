@@ -112,3 +112,5 @@ function initRoomRemove(getRooms, onRoomsChanged) {
     openBtn.addEventListener('click', openOverlay);
     cancelBtn.addEventListener('click', closeOverlay);
 }
+
+if (typeof module !== 'undefined') { module.exports = { initRoomRemove: initRoomRemove }; }

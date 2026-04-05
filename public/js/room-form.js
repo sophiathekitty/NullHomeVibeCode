@@ -104,3 +104,5 @@ function initRoomForm(onSuccess) {
     cancelBtn.addEventListener('click', closeOverlay);
     submitBtn.addEventListener('click', submitForm);
 }
+
+if (typeof module !== 'undefined') { module.exports = { initRoomForm: initRoomForm }; }

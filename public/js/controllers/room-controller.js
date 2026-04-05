@@ -69,3 +69,5 @@ class RoomController extends BaseController {
         this.view.render(rooms);
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = RoomController; }

@@ -141,9 +141,9 @@ Add these to `/etc/crontab` or the Pi's `crontab -e`:
 
 ### JavaScript
 
-- jQuery-based; no build step.
-- All API calls use `$.ajax` with `Content-Type: application/json`.
-- Avoid unnecessary complexity — keep it readable and functional.
+- No build step — plain ES2022 class syntax loaded via `<script>` tags.
+- Front-end architecture follows MVC conventions documented in [`App-conventions.md`](App-conventions.md).
+- JavaScript testing and linting are covered in [**§ 10 — JavaScript Testing**](App-conventions.md#10-javascript-testing) of `App-conventions.md`.
 
 ---
 
@@ -184,6 +184,8 @@ Visit `http://<raspberry-pi-ip>/` to open the NullHome dashboard.
 
 ## Running Tests
 
+### PHP
+
 Tests use PHPUnit and run against a real MySQL database (`homehub_test`). They
 never touch your production database.
 
@@ -201,3 +203,23 @@ composer install
 
 > **Important:** `config.test.php` is gitignored. Never run tests against your
 > real database — always use a dedicated test database (e.g. `homehub_test`).
+
+### JavaScript
+
+Tests use Jest with jsdom and cover all front-end modules in `public/js/`.
+
+```bash
+# 1. Install Node.js dev dependencies (once)
+npm install
+
+# 2. Run Jest tests
+npm test
+
+# 3. Run with coverage (must reach ≥ 80 % line coverage)
+npm run test:coverage
+
+# 4. Lint source and test files
+npm run lint
+```
+
+See [§ 10 — JavaScript Testing](App-conventions.md#10-javascript-testing) in `App-conventions.md` for naming conventions, test structure, and TDD guidelines.

@@ -333,6 +333,112 @@ Models unwrap once. Everything downstream receives plain data. This is the singl
 | AppEvents | `/public/js/app-events.js` | No | No | N/A — is the dispatcher |
 | App bootstrap | `/public/js/app.js` | Minimal | No | Emits `app:ready` only |
 
+---
+
+## 10. JavaScript Testing
+
+All JavaScript is tested with **Jest** using `jest-environment-jsdom`. Tests run alongside the PHP test suite in CI and are required for every pull request.
+
+### 10.1 Test file placement and naming
+
+| Source file | Test file |
+|---|---|
+| `public/js/app-events.js` | `tests/js/app-events.test.js` |
+| `public/js/app.js` | `tests/js/app.test.js` |
+| `public/js/models/base-model.js` | `tests/js/models/base-model.test.js` |
+| `public/js/models/room-model.js` | `tests/js/models/room-model.test.js` |
+| `public/js/views/base-view.js` | `tests/js/views/base-view.test.js` |
+| `public/js/controllers/base-controller.js` | `tests/js/controllers/base-controller.test.js` |
+| `public/js/menu.js` | `tests/js/menu.test.js` |
+| (etc.) | (follow the same pattern) |
+
+- All test files live under `tests/js/`, mirroring the `public/js/` subdirectory structure.
+- Test file names match the source file name with `.test.js` suffix.
+
+### 10.2 Running tests and lint
+
+```bash
+# Install Node.js dependencies (once)
+npm install
+
+# Run all Jest tests
+npm test
+
+# Run tests with coverage report (must reach 80 % line coverage)
+npm run test:coverage
+
+# Run ESLint on source and test files
+npm run lint
+```
+
+### 10.3 Coverage requirement
+
+Every pull request must maintain **≥ 80 % line coverage** across `public/js/**/*.js`. The threshold is enforced automatically when running `npm run test:coverage`.
+
+### 10.4 Writing tests — conventions
+
+- Use `describe` blocks to group related tests; use `test` for individual assertions.
+- Use `var` for declarations — consistent with the rest of the project.
+- For **model tests**: mock `global.fetch` with `jest.fn()` and verify both the URL/options passed and the returned data.
+- For **view tests**: set `document.body.innerHTML` in `beforeEach` to supply the required `<template>` and container elements.
+- For **controller tests**: stub dependent `Model` and `View` constructors on `global` before loading the controller module.
+- For modules with static state (e.g. `AppEvents`): call `jest.resetModules()` and re-`require` in `beforeEach` so each test gets a fresh class.
+
+**Example — model test:**
+
+```javascript
+var BaseModel = require('../../public/js/models/base-model.js');
+
+test('get() returns unwrapped data on success', async function () {
+    global.fetch = jest.fn().mockResolvedValue({
+        json: function () { return Promise.resolve({ success: true, data: [1, 2] }); }
+    });
+    var model = new BaseModel('/api/items');
+    var result = await model.get();
+    expect(result).toEqual([1, 2]);
+});
+```
+
+**Example — view test:**
+
+```javascript
+var BaseView = require('../../public/js/views/base-view.js');
+global.BaseView = BaseView;
+var RoomView  = require('../../public/js/views/room-view.js');
+
+beforeEach(function () {
+    document.body.innerHTML =
+        '<template id="room-card"><div class="room-card"><span class="room-card-title"></span></div></template>' +
+        '<div id="roomsContainer"></div>';
+});
+
+test('render shows empty state', function () {
+    var view = new RoomView();
+    view.render([]);
+    expect(document.querySelector('.empty').textContent).toBe('No rooms added yet.');
+});
+```
+
+### 10.5 ESLint
+
+All source files in `public/js/` and all test files in `tests/js/` are linted via the shared `.eslintrc.json` config (ECMAScript 2022, `eslint:recommended`). Lint failures block the CI build.
+
+```bash
+npm run lint        # lint source + tests
+npx eslint public/js/models/room-model.js   # lint a single file
+```
+
+### 10.6 TDD checklist for new JS modules
+
+Every new JavaScript module requires:
+
+- [ ] A matching `.test.js` file in `tests/js/` (mirroring subdirectory structure)
+- [ ] Tests covering the primary happy path and at least one error / edge case
+- [ ] Passing lint (`npm run lint`) with zero errors
+- [ ] No regression in coverage (`npm run test:coverage`)
+
+---
+
 ## Colors
 
 Here's the colors in the logo:

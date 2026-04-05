@@ -36,3 +36,5 @@ class ValidationModel extends BaseModel {
         return this.post('/delete-tables', { tables: tables, confirm: true });
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = ValidationModel; }

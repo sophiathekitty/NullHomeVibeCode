@@ -41,3 +41,5 @@ class RoomView extends BaseView {
         });
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = RoomView; }

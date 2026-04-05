@@ -57,3 +57,5 @@ class BaseController {
         throw new Error('BaseController.refresh() must be implemented by subclass.');
     }
 }
+
+if (typeof module !== 'undefined') { module.exports = BaseController; }

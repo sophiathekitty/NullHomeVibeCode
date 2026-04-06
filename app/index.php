@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/public/css/main.css">
     <link rel="stylesheet" href="/public/css/rooms.css">
     <link rel="stylesheet" href="/public/css/wemo-scan.css">
+    <link rel="stylesheet" href="/public/css/nullhub-scan.css">
     <link rel="stylesheet" href="/public/css/db-validate.css">
 </head>
 <body>
@@ -39,6 +40,7 @@
         <li><button id="openAddRoom">Add Room</button></li>
         <li><button id="openRemoveRoom">Remove Room</button></li>
         <li><button id="openWemoScan">Scan for Wemos</button></li>
+        <li><button id="openNullHubScan">Scan for NullHubs</button></li>
         <li><button id="openDbValidate">Validate DB</button></li>
     </ul>
 </nav>
@@ -94,6 +96,32 @@
             <button id="wemoScanStart">Start Scan</button>
             <button id="wemoScanCancel" hidden>Cancel</button>
             <button id="wemoScanClose" hidden>Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- NullHub Scan overlay -->
+<div class="modal-overlay nullhub-scan-overlay" id="nullhubScanOverlay" hidden>
+    <div class="modal nullhub-scan-modal">
+        <h2>Scan for NullHubs</h2>
+
+        <div class="nullhub-scan-status" id="nullhubScanStatus">Ready to scan</div>
+
+        <div class="nullhub-scan-progress-wrap" id="nullhubScanProgressWrap" hidden>
+            <div class="nullhub-scan-progress-bar">
+                <div class="nullhub-scan-progress-fill" id="nullhubScanProgressFill"></div>
+            </div>
+            <div class="nullhub-scan-progress-label" id="nullhubScanProgressLabel"></div>
+        </div>
+
+        <ul class="nullhub-scan-found-list" id="nullhubScanFoundList" hidden>
+            <!-- populated by JS during scan -->
+        </ul>
+
+        <div class="modal-actions">
+            <button id="nullhubScanStart">Start Scan</button>
+            <button id="nullhubScanCancel" hidden>Cancel</button>
+            <button id="nullhubScanClose" hidden>Close</button>
         </div>
     </div>
 </div>
@@ -181,6 +209,7 @@
 <script src="/public/js/room-form.js"></script>
 <script src="/public/js/room-remove.js"></script>
 <script src="/public/js/wemo-scan.js"></script>
+<script src="/public/js/nullhub-scan.js"></script>
 
 <!-- bootstrap (must be last) -->
 <script src="/public/js/app.js"></script>

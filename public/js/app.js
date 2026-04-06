@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function (updated) { roomController.setRooms(updated); }
     );
     initWemoScan();
+    initNullHubScan();
 
     var validationController = new ValidationController();
     validationController.init();

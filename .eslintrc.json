@@ -23,7 +23,8 @@
         "initMenu": "readonly",
         "initRoomForm": "readonly",
         "initRoomRemove": "readonly",
-        "initWemoScan": "readonly"
+        "initWemoScan": "readonly",
+        "initNullHubScan": "readonly"
     },
     "rules": {
         "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]

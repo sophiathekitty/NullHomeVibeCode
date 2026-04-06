@@ -20,25 +20,29 @@ class NetworkModuleTest extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        DB::query("DELETE FROM `settings` WHERE `key` IN ('host_ip','host_mac','host_subnet')");
+        DB::query("DELETE FROM `settings` WHERE `key` IN ('host_ip','host_mac','host_subnet','host_hostname')");
     }
 
     /**
-     * A fake exec that returns valid output for both the IP and MAC commands.
+     * A fake exec that returns valid output for the IP, MAC, and hostname commands.
      *
-     * @param string $ip  The IP address to return on the first call.
-     * @param string $mac The MAC address to return on the second call.
+     * @param string $ip       The IP address to return on the first call.
+     * @param string $mac      The MAC address to return on the second call.
+     * @param string $hostname The hostname to return on the third call.
      * @return callable Callable compatible with NetworkModule::detect()'s $execFn.
      */
-    private function makeFakeExec(string $ip, string $mac): callable
+    private function makeFakeExec(string $ip, string $mac, string $hostname = 'test-host'): callable
     {
         $callCount = 0;
-        return function (string $command) use (&$callCount, $ip, $mac): array {
+        return function (string $command) use (&$callCount, $ip, $mac, $hostname): array {
             $callCount++;
             if ($callCount === 1) {
                 return [$ip];
             }
-            return [$mac];
+            if ($callCount === 2) {
+                return [$mac];
+            }
+            return [$hostname];
         };
     }
 
@@ -87,12 +91,55 @@ class NetworkModuleTest extends BaseTestCase
      */
     public function testDetectWritesToSettings(): void
     {
-        NetworkModule::detect($this->makeFakeExec('10.0.0.12', '11:22:33:44:55:66'));
+        NetworkModule::detect($this->makeFakeExec('10.0.0.12', '11:22:33:44:55:66', 'my-server'));
 
         $settings = new SettingsModel();
         $this->assertSame('10.0.0.12', $settings->get('host_ip'));
         $this->assertSame('11:22:33:44:55:66', $settings->get('host_mac'));
         $this->assertSame('10.0.0.0/24', $settings->get('host_subnet'));
+        $this->assertSame('my-server', $settings->get('host_hostname'));
+    }
+
+    /**
+     * Assert that detect() includes the hostname in its returned array.
+     *
+     * @return void
+     */
+    public function testDetectReturnsHostname(): void
+    {
+        $result = NetworkModule::detect($this->makeFakeExec('192.168.1.10', 'aa:bb:cc:dd:ee:ff', 'nullhome'));
+
+        $this->assertArrayHasKey('hostname', $result);
+        $this->assertSame('nullhome', $result['hostname']);
+    }
+
+    /**
+     * Assert that when the hostname command returns empty output, detect() still
+     * succeeds and does not write host_hostname to settings.
+     *
+     * @return void
+     */
+    public function testDetectOmitsHostnameWhenEmpty(): void
+    {
+        $callCount = 0;
+        $fakeExec  = static function (string $command) use (&$callCount): array {
+            $callCount++;
+            if ($callCount === 1) {
+                return ['192.168.1.20'];
+            }
+            if ($callCount === 2) {
+                return ['cc:dd:ee:ff:00:11'];
+            }
+            return []; // hostname returns nothing
+        };
+
+        $result = NetworkModule::detect($fakeExec);
+
+        $this->assertSame('192.168.1.20', $result['ip']);
+        $this->assertSame('', $result['hostname']);
+
+        $settings = new SettingsModel();
+        $this->assertNull($settings->get('host_hostname'), 'host_hostname must not be written when empty.');
     }
 
     /**

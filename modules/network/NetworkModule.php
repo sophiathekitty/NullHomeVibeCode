@@ -12,11 +12,13 @@ require_once __DIR__ . '/../../models/NmapScan.php';
 class NetworkModule
 {
     /**
-     * Detect the host server's primary IP address, MAC address, and derive
-     * the /24 subnet. Persists the values to the settings table via SettingsModel.
+     * Detect the host server's primary IP address, MAC address, hostname, and
+     * derive the /24 subnet. Persists the values to the settings table via
+     * SettingsModel.
      *
      * Uses `ip addr show` (Linux) to retrieve interface information. Parses
      * the first non-loopback global IPv4 address and its associated MAC address.
+     * Uses `hostname` to retrieve the server hostname.
      *
      * If detection fails (exec returns no output or parsing fails), returns an
      * empty array and does not write to settings.
@@ -25,8 +27,9 @@ class NetworkModule
      *                              Signature: (string $command): array<int, string>
      *                              where the return value is the lines of output.
      *                              Defaults to a wrapper around the built-in exec().
-     * @return array<string, string> Associative array with keys 'ip', 'mac', and
-     *                               'subnet', or an empty array if detection fails.
+     * @return array<string, string> Associative array with keys 'ip', 'mac',
+     *                               'subnet', and 'hostname', or an empty array
+     *                               if detection fails.
      */
     public static function detect(?callable $execFn = null): array
     {
@@ -61,16 +64,24 @@ class NetworkModule
 
         $subnet = self::deriveSubnet($ip);
 
+        // Detect the server hostname.
+        $hostnameLines = $execFn('hostname');
+        $hostname      = trim($hostnameLines[0] ?? '');
+
         // Persist to the settings table.
         $settings = new SettingsModel();
         $settings->set('host_ip', $ip);
         $settings->set('host_mac', $mac);
         $settings->set('host_subnet', $subnet);
+        if ($hostname !== '') {
+            $settings->set('host_hostname', $hostname);
+        }
 
         return [
-            'ip'     => $ip,
-            'mac'    => $mac,
-            'subnet' => $subnet,
+            'ip'       => $ip,
+            'mac'      => $mac,
+            'subnet'   => $subnet,
+            'hostname' => $hostname,
         ];
     }
 

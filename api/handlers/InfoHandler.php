@@ -3,6 +3,9 @@ require_once __DIR__ . '/ApiHandler.php';
 require_once __DIR__ . '/../../models/SettingsModel.php';
 require_once __DIR__ . '/../../modules/network/NetworkModule.php';
 
+/** Source repository URL included in every info response. */
+define('INFO_GIT_URL', 'https://github.com/sophiathekitty/NullHomeVibeCode');
+
 /**
  * InfoHandler — handles /api/info requests.
  *
@@ -92,7 +95,7 @@ class InfoHandler extends ApiHandler
             'name'        => $name,
             'path'        => '/',
             'setup'       => 'complete',
-            'git'         => 'https://github.com/sophiathekitty/NullHomeVibeCode',
+            'git'         => INFO_GIT_URL,
             'is_hub'      => true,
             'enabled'     => '1',
             'room'        => $this->settings->get('hub_room') ?? '0',

@@ -197,6 +197,7 @@ class InfoHandlerTest extends BaseTestCase
         $this->assertSame('1', $info['enabled']);
         $this->assertFalse($info['main']);
         $this->assertStringContainsString('github.com', $info['git']);
+        $this->assertSame(INFO_GIT_URL, $info['git']);
     }
 
     // ── HTTP method guard ─────────────────────────────────────────────────────
@@ -313,7 +314,7 @@ class InfoHandlerTestDouble extends InfoHandler
             'name'        => $name,
             'path'        => '/',
             'setup'       => 'complete',
-            'git'         => 'https://github.com/sophiathekitty/NullHomeVibeCode',
+            'git'         => INFO_GIT_URL,
             'is_hub'      => true,
             'enabled'     => '1',
             'room'        => $settings->get('hub_room') ?? '0',

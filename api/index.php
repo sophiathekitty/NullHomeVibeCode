@@ -60,6 +60,7 @@ if (!empty($_GET['debug']) && $_GET['debug'] === '1') {
 // Handler registry — maps resource name to handler class file + class name
 $handlers = [
     'devices'    => __DIR__ . '/handlers/DevicesHandler.php',
+    'info'       => __DIR__ . '/handlers/InfoHandler.php',
     'settings'   => __DIR__ . '/handlers/SettingsHandler.php',
     'rooms'      => __DIR__ . '/handlers/RoomsHandler.php',
     'scan'       => __DIR__ . '/handlers/ScanHandler.php',

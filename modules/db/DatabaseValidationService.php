@@ -27,6 +27,7 @@ class DatabaseValidationService {
             'RoomNeighbor'   => $modelsDir . 'RoomNeighbor.php',
             'NmapScan'       => $modelsDir . 'NmapScan.php',
             'Wemo'           => $modelsDir . 'Wemo.php',
+            'NullHub'        => $modelsDir . 'NullHub.php',
             'Service'        => $modelsDir . 'Service.php',
             'ServiceLog'     => $modelsDir . 'ServiceLog.php',
         ];
@@ -150,7 +151,26 @@ class DatabaseValidationService {
             ];
         }
 
-        // 5. Unique index on services.name.
+        // 5. Unique index on null_hubs.mac_address.
+        try {
+            $idx = DB::query(
+                "SHOW INDEX FROM `null_hubs` WHERE Key_name = 'idx_null_hubs_mac'"
+            )->fetchAll();
+            if (empty($idx)) {
+                DB::connection()->exec(
+                    'CREATE UNIQUE INDEX `idx_null_hubs_mac` ON `null_hubs` (`mac_address`)'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError = true;
+            $results[] = [
+                'model'  => 'NullHub',
+                'table'  => 'null_hubs',
+                'status' => 'migration error (unique idx mac): ' . $e->getMessage(),
+            ];
+        }
+
+        // 6. Unique index on services.name.
         try {
             $idx = DB::query(
                 "SHOW INDEX FROM `services` WHERE Key_name = 'idx_services_name'"
@@ -169,7 +189,7 @@ class DatabaseValidationService {
             ];
         }
 
-        // 6. Seed services table with default rows if not already present.
+        // 7. Seed services table with default rows if not already present.
         $seedServices = [
             ['name' => 'every_minute', 'retention_days' => 1],
             ['name' => 'every_hour',   'retention_days' => 7],
@@ -198,7 +218,7 @@ class DatabaseValidationService {
             }
         }
 
-        // 7. Foreign key on service_logs.service_id → services.id (if not present).
+        // 8. Foreign key on service_logs.service_id → services.id (if not present).
         try {
             $fk = DB::query(
                 "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE

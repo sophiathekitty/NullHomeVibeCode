@@ -2,38 +2,43 @@
 require_once __DIR__ . '/ApiHandler.php';
 require_once __DIR__ . '/../../controllers/ScanController.php';
 require_once __DIR__ . '/../../controllers/WemoController.php';
+require_once __DIR__ . '/../../controllers/NullHubController.php';
 
 /**
  * ScanHandler — handles /api/scan/… requests.
  *
  * Routes:
- *   POST /api/scan/reset        → reset nmap table and run ping sweep
- *   POST /api/scan/next/wemo    → check next unchecked IP for a Wemo device
+ *   POST /api/scan/reset           → reset nmap table and run ping sweep
+ *   POST /api/scan/next/wemo       → check next unchecked IP for a Wemo device
+ *   POST /api/scan/next/nullhub    → check next unchecked IP for a NullHub device
  *
  * The `next/{type}` pattern is intentionally open-ended so that additional
- * device types (e.g. nullhub) can be added by registering their controller
- * under a new `$type` branch without changing the route structure.
+ * device types can be added by registering their controller under a new
+ * `$type` branch without changing the route structure.
  */
 class ScanHandler extends ApiHandler
 {
-    private ScanController  $scanController;
-    private WemoController  $wemoController;
+    private ScanController     $scanController;
+    private WemoController     $wemoController;
+    private NullHubController  $nullHubController;
 
     /**
      * Constructor — instantiate the scan and device controllers.
      */
     public function __construct()
     {
-        $this->scanController = new ScanController();
-        $this->wemoController = new WemoController();
+        $this->scanController    = new ScanController();
+        $this->wemoController    = new WemoController();
+        $this->nullHubController = new NullHubController();
     }
 
     /**
      * Route the scan request to the appropriate controller method.
      *
      * URL segments received in $params (everything after "scan"):
-     *   ['reset']        → POST /api/scan/reset
-     *   ['next', 'wemo'] → POST /api/scan/next/wemo
+     *   ['reset']           → POST /api/scan/reset
+     *   ['next', 'wemo']    → POST /api/scan/next/wemo
+     *   ['next', 'nullhub'] → POST /api/scan/next/nullhub
      *
      * @param array  $params URL path segments after the "scan" resource key.
      * @param string $method HTTP request method.
@@ -66,6 +71,11 @@ class ScanHandler extends ApiHandler
 
             if ($type === 'wemo') {
                 $this->ok($this->wemoController->checkNext());
+                return;
+            }
+
+            if ($type === 'nullhub') {
+                $this->ok($this->nullHubController->checkNext());
                 return;
             }
 

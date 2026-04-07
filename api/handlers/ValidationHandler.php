@@ -23,6 +23,7 @@ class ValidationHandler extends ApiHandler
         'room_neighbors',
         'nmap_scans',
         'wemos',
+        'null_hubs',
         'services',
         'service_logs',
     ];

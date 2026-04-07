@@ -1,0 +1,80 @@
+/* NullHome — NullHub scan overlay styles */
+
+/* ── NullHub scan modal ──────────────────────────────── */
+
+.nullhub-scan-modal {
+    width: min(90vw, 420px);
+}
+
+/* ── Status line ─────────────────────────────────────── */
+
+.nullhub-scan-status {
+    font-size: 0.88rem;
+    color: var(--muted);
+    min-height: 1.25em;
+}
+
+/* ── Progress bar ────────────────────────────────────── */
+
+.nullhub-scan-progress-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.nullhub-scan-progress-bar {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.nullhub-scan-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.25s ease;
+}
+
+.nullhub-scan-progress-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+}
+
+/* ── Found NullHubs list ─────────────────────────────── */
+
+.nullhub-scan-found-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: 30vh;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+}
+
+.nullhub-scan-found-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.65rem;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.nullhub-scan-found-name {
+    font-size: 0.88rem;
+    color: var(--on-color);
+    font-weight: 500;
+}
+
+.nullhub-scan-found-ip {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: monospace;
+}

@@ -9,6 +9,7 @@
 describe('app.js DOMContentLoaded bootstrap', function () {
     var mockRoomController;
     var mockValidationController;
+    var mockUserController;
 
     beforeEach(function () {
         jest.resetModules();
@@ -19,9 +20,11 @@ describe('app.js DOMContentLoaded bootstrap', function () {
             setRooms: jest.fn()
         };
         mockValidationController = { init: jest.fn() };
+        mockUserController       = { init: jest.fn() };
 
-        global.RoomController = jest.fn().mockReturnValue(mockRoomController);
+        global.RoomController       = jest.fn().mockReturnValue(mockRoomController);
         global.ValidationController = jest.fn().mockReturnValue(mockValidationController);
+        global.UserController       = jest.fn().mockReturnValue(mockUserController);
         global.AppEvents = { on: jest.fn(), emit: jest.fn() };
         global.initMenu = jest.fn();
         global.initRoomForm = jest.fn();
@@ -41,6 +44,11 @@ describe('app.js DOMContentLoaded bootstrap', function () {
     test('instantiates ValidationController and calls init()', function () {
         expect(global.ValidationController).toHaveBeenCalled();
         expect(mockValidationController.init).toHaveBeenCalled();
+    });
+
+    test('instantiates UserController and calls init()', function () {
+        expect(global.UserController).toHaveBeenCalled();
+        expect(mockUserController.init).toHaveBeenCalled();
     });
 
     test('initialises menu', function () {

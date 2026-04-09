@@ -24,5 +24,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var validationController = new ValidationController();
     validationController.init();
 
+    var userController = new UserController();
+    userController.init();
+
     AppEvents.emit('app:ready', {});
 });

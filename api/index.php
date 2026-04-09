@@ -65,6 +65,8 @@ $handlers = [
     'rooms'      => __DIR__ . '/handlers/RoomsHandler.php',
     'scan'       => __DIR__ . '/handlers/ScanHandler.php',
     'validation' => __DIR__ . '/handlers/ValidationHandler.php',
+    'users'      => __DIR__ . '/handlers/UsersHandler.php',
+    'auth'       => __DIR__ . '/handlers/AuthHandler.php',
 ];
 
 if (!isset($handlers[$resource])) {
@@ -83,4 +85,7 @@ if (!class_exists($className)) {
 }
 
 $handler = new $className();
+if (method_exists($handler, 'setResource')) {
+    $handler->setResource($resource);
+}
 $handler->handle($params, $method, $body);

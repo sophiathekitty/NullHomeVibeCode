@@ -3,19 +3,21 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg:         #0f0f0f;
-    --surface:    #1a1a1a;
-    --surface2:   #252525;
-    --border:     #333;
-    --text:       #e8e8e8;
-    --muted:      #888;
-    --accent:     #4a9eff;
-    --on-color:   #4caf50;
-    --off-color:  #555;
-    --danger:     #f44336;
-    --radius:     6px;
-    --transition: 0.15s ease;
-    --drawer-w:   260px;
+    --bg:          #0f0f0f;
+    --surface:     #1a1a1a;
+    --surface2:    #252525;
+    --border:      #333;
+    --text:        #e8e8e8;
+    --muted:       #888;
+    --accent:      #4a9eff;
+    --on-color:    #4caf50;
+    --off-color:   #555;
+    --danger:      #f44336;
+    --color-error: #f44336;
+    --color-warn:  #ff9800;
+    --radius:      6px;
+    --transition:  0.15s ease;
+    --drawer-w:    260px;
 }
 
 body {

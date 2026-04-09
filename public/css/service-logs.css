@@ -1,0 +1,221 @@
+/* NullHome — Service Logs viewer */
+
+/* ── Page layout ─────────────────────────────────────── */
+
+#service-logs-page {
+    padding: 1.25rem;
+}
+
+#service-logs-page h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+}
+
+#service-logs-page h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+}
+
+/* ── Hidden utility ──────────────────────────────────── */
+
+.hidden {
+    display: none;
+}
+
+/* ── Service card ────────────────────────────────────── */
+
+.service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: border-color var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.service-card:hover {
+    border-color: var(--accent);
+}
+
+.service-card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.service-card-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ── Badges ──────────────────────────────────────────── */
+
+.badge-error,
+.badge-warn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.45rem;
+    border-radius: calc(var(--radius) * 0.75);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.badge-error {
+    background: var(--color-error);
+    color: #fff;
+}
+
+.badge-warn {
+    background: var(--color-warn);
+    color: #000;
+}
+
+/* ── Run list panel ──────────────────────────────────── */
+
+#log-run-list,
+#log-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#log-run-list > button,
+#log-detail > button {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: border-color var(--transition), color var(--transition);
+}
+
+#log-run-list > button:hover,
+#log-detail > button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.run-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    transition: border-color var(--transition);
+    font-size: 0.85rem;
+}
+
+.run-row:hover {
+    border-color: var(--accent);
+}
+
+.run-row-time {
+    color: var(--text);
+    min-width: 10rem;
+}
+
+.run-row-duration {
+    color: var(--muted);
+    min-width: 5rem;
+}
+
+.run-row-badges {
+    display: flex;
+    gap: 0.4rem;
+    margin-left: auto;
+}
+
+/* ── Log entry rows ──────────────────────────────────── */
+
+.log-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius);
+    font-size: 0.82rem;
+    font-family: monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    margin-bottom: 0.3rem;
+}
+
+.log-entry-time {
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 5.5rem;
+}
+
+.log-entry-level {
+    white-space: nowrap;
+    min-width: 4rem;
+}
+
+.log-entry-message {
+    color: var(--text);
+    word-break: break-word;
+}
+
+/* ── Level badges ────────────────────────────────────── */
+
+.level-log,
+.level-warn,
+.level-error {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.4rem;
+    border-radius: calc(var(--radius) * 0.6);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.level-log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.level-warn {
+    background: var(--color-warn);
+    color: #000;
+}
+
+.level-error {
+    background: var(--color-error);
+    color: #fff;
+}
+
+/* ── Desktop: wider card grid ────────────────────────── */
+
+@media (min-width: 768px) {
+    #service-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+
+    .service-card {
+        margin-bottom: 0;
+    }
+}

@@ -28,6 +28,7 @@ describe('app.js DOMContentLoaded bootstrap', function () {
         global.initRoomRemove = jest.fn();
         global.initWemoScan = jest.fn();
         global.initNullHubScan = jest.fn();
+        global.initServiceLogs = jest.fn();
 
         require('../../public/js/app.js');
         document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -70,6 +71,10 @@ describe('app.js DOMContentLoaded bootstrap', function () {
 
     test('initialises nullhub scan', function () {
         expect(global.initNullHubScan).toHaveBeenCalled();
+    });
+
+    test('initialises service logs', function () {
+        expect(global.initServiceLogs).toHaveBeenCalled();
     });
 
     test('emits app:ready at the end', function () {

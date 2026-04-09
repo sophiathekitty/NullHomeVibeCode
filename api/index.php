@@ -59,12 +59,13 @@ if (!empty($_GET['debug']) && $_GET['debug'] === '1') {
 
 // Handler registry — maps resource name to handler class file + class name
 $handlers = [
-    'devices'    => __DIR__ . '/handlers/DevicesHandler.php',
-    'info'       => __DIR__ . '/handlers/InfoHandler.php',
-    'settings'   => __DIR__ . '/handlers/SettingsHandler.php',
-    'rooms'      => __DIR__ . '/handlers/RoomsHandler.php',
-    'scan'       => __DIR__ . '/handlers/ScanHandler.php',
-    'validation' => __DIR__ . '/handlers/ValidationHandler.php',
+    'devices'      => __DIR__ . '/handlers/DevicesHandler.php',
+    'info'         => __DIR__ . '/handlers/InfoHandler.php',
+    'settings'     => __DIR__ . '/handlers/SettingsHandler.php',
+    'rooms'        => __DIR__ . '/handlers/RoomsHandler.php',
+    'scan'         => __DIR__ . '/handlers/ScanHandler.php',
+    'validation'   => __DIR__ . '/handlers/ValidationHandler.php',
+    'service-logs' => __DIR__ . '/handlers/ServiceLogsHandler.php',
 ];
 
 if (!isset($handlers[$resource])) {
@@ -75,7 +76,9 @@ if (!isset($handlers[$resource])) {
 
 require_once $handlers[$resource];
 
-$className = ucfirst($resource) . 'Handler';
+// Convert kebab-case resource names to PascalCase class names.
+// e.g. "service-logs" → "ServiceLogsHandler"
+$className = implode('', array_map('ucfirst', explode('-', $resource))) . 'Handler';
 if (!class_exists($className)) {
     http_response_code(500);
     echo json_encode(['success' => false, 'data' => null, 'error' => "Handler class $className not found"]);

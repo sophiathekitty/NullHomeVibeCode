@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
     initWemoScan();
     initNullHubScan();
+    initServiceLogs();
 
     var validationController = new ValidationController();
     validationController.init();

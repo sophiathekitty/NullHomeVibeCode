@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/public/css/wemo-scan.css">
     <link rel="stylesheet" href="/public/css/nullhub-scan.css">
     <link rel="stylesheet" href="/public/css/db-validate.css">
+    <link rel="stylesheet" href="/public/css/service-logs.css">
 </head>
 <body>
 
@@ -42,6 +43,7 @@
         <li><button id="openWemoScan">Scan for Wemos</button></li>
         <li><button id="openNullHubScan">Scan for NullHubs</button></li>
         <li><button id="openDbValidate">Validate DB</button></li>
+        <?php require __DIR__ . '/../views/nav.php'; ?>
     </ul>
 </nav>
 
@@ -186,6 +188,8 @@
     <!-- populated by JS -->
 </main>
 
+<?php require __DIR__ . '/../views/service-logs.php'; ?>
+
 <!-- framework -->
 <script src="/public/js/app-events.js"></script>
 <script src="/public/js/models/base-model.js"></script>
@@ -210,6 +214,7 @@
 <script src="/public/js/room-remove.js"></script>
 <script src="/public/js/wemo-scan.js"></script>
 <script src="/public/js/nullhub-scan.js"></script>
+<script src="/public/js/service-logs.js"></script>
 
 <!-- bootstrap (must be last) -->
 <script src="/public/js/app.js"></script>

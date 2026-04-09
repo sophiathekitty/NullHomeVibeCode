@@ -24,7 +24,8 @@
         "initRoomForm": "readonly",
         "initRoomRemove": "readonly",
         "initWemoScan": "readonly",
-        "initNullHubScan": "readonly"
+        "initNullHubScan": "readonly",
+        "initServiceLogs": "readonly"
     },
     "rules": {
         "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]

@@ -30,6 +30,8 @@ class DatabaseValidationService {
             'NullHub'        => $modelsDir . 'NullHub.php',
             'Service'        => $modelsDir . 'Service.php',
             'ServiceLog'     => $modelsDir . 'ServiceLog.php',
+            'User'           => $modelsDir . 'User.php',
+            'UserSession'    => $modelsDir . 'UserSession.php',
         ];
     }
 
@@ -240,6 +242,77 @@ class DatabaseValidationService {
                 'table'  => 'service_logs',
                 'status' => 'migration error (fk service_id): ' . $e->getMessage(),
             ];
+        }
+
+        // 9. Unique index on users.mac_address.
+        // MySQL permits multiple NULLs in a unique index, so this only enforces
+        // uniqueness among non-null values — correct behaviour for device users.
+        try {
+            $idx = DB::query(
+                "SHOW INDEX FROM `users` WHERE Key_name = 'idx_users_mac'"
+            )->fetchAll();
+            if (empty($idx)) {
+                DB::connection()->exec(
+                    'CREATE UNIQUE INDEX `idx_users_mac` ON `users` (`mac_address`)'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError  = true;
+            $results[] = ['model' => 'User', 'table' => 'users',
+                          'status' => 'migration error (unique idx mac): ' . $e->getMessage()];
+        }
+
+        // 10. Unique index on sessions.token.
+        try {
+            $idx = DB::query(
+                "SHOW INDEX FROM `sessions` WHERE Key_name = 'idx_sessions_token'"
+            )->fetchAll();
+            if (empty($idx)) {
+                DB::connection()->exec(
+                    'CREATE UNIQUE INDEX `idx_sessions_token` ON `sessions` (`token`)'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError  = true;
+            $results[] = ['model' => 'UserSession', 'table' => 'sessions',
+                          'status' => 'migration error (unique idx token): ' . $e->getMessage()];
+        }
+
+        // 11. FK: sessions.user_id → users.id ON DELETE CASCADE.
+        try {
+            $fk = DB::query(
+                "SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+                  WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'sessions'
+                    AND CONSTRAINT_NAME = 'fk_sessions_user_id'"
+            )->fetchColumn();
+            if ((int) $fk === 0) {
+                DB::connection()->exec(
+                    'ALTER TABLE `sessions`
+                     ADD CONSTRAINT `fk_sessions_user_id`
+                     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE'
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError  = true;
+            $results[] = ['model' => 'UserSession', 'table' => 'sessions',
+                          'status' => 'migration error (fk user_id): ' . $e->getMessage()];
+        }
+
+        // 12. Seed localhost system user (id=1) if not present.
+        try {
+            $exists = DB::query('SELECT COUNT(*) FROM `users` WHERE `id` = 1')->fetchColumn();
+            if ((int) $exists === 0) {
+                DB::query(
+                    'INSERT INTO `users` (`id`, `name`, `role`, `mac_address`, `show_admin_ui`)
+                     VALUES (1, ?, ?, NULL, 0)',
+                    ['localhost', 'device']
+                );
+            }
+        } catch (Throwable $e) {
+            $anyError  = true;
+            $results[] = ['model' => 'User', 'table' => 'users',
+                          'status' => 'seed error (localhost): ' . $e->getMessage()];
         }
 
         return [

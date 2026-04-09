@@ -26,6 +26,8 @@ class ValidationHandler extends ApiHandler
         'null_hubs',
         'services',
         'service_logs',
+        'users',
+        'sessions',
     ];
 
     /**

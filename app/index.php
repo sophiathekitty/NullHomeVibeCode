@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/public/css/wemo-scan.css">
     <link rel="stylesheet" href="/public/css/nullhub-scan.css">
     <link rel="stylesheet" href="/public/css/db-validate.css">
+    <link rel="stylesheet" href="/public/css/user-identity.css">
 </head>
 <body>
 
@@ -30,6 +31,10 @@
         </svg>
     </button>
     <h1 class="app-title">nullhome</h1>
+    <button class="user-indicator-btn" id="userIndicator" aria-label="Switch user">
+      <span class="user-indicator-dot" id="userIndicatorDot"></span>
+      <span class="user-indicator-name" id="userIndicatorName">Guest</span>
+    </button>
 </header>
 
 <!-- Slide-in drawer -->
@@ -37,6 +42,7 @@
 <nav class="drawer" id="drawer">
     <button class="drawer-close" id="drawerClose" aria-label="Close menu">&#x2715;</button>
     <ul class="drawer-menu">
+        <li><button id="openUserSwitcher">Switch User</button></li>
         <li><button id="openAddRoom">Add Room</button></li>
         <li><button id="openRemoveRoom">Remove Room</button></li>
         <li><button id="openWemoScan">Scan for Wemos</button></li>
@@ -44,6 +50,30 @@
         <li><button id="openDbValidate">Validate DB</button></li>
     </ul>
 </nav>
+
+<!-- User Switcher overlay -->
+<div class="modal-overlay" id="userSwitcherOverlay" hidden>
+  <div class="modal">
+    <h2>Who are you?</h2>
+    <ul class="user-switcher-list" id="userSwitcherList">
+      <!-- populated by JS -->
+    </ul>
+    <p class="form-error" id="userSwitcherError" hidden></p>
+    <div class="user-switcher-add-form" id="userSwitcherAddForm" hidden>
+      <label for="newUserName">Your name</label>
+      <input type="text" id="newUserName" placeholder="e.g. Alex" />
+      <label>
+        <input type="checkbox" id="newUserAdmin" />
+        Show admin tools
+      </label>
+      <button id="submitNewUser">Add me</button>
+    </div>
+    <div class="modal-actions">
+      <button id="addNewUserBtn">+ Add me</button>
+      <button id="cancelUserSwitcher">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- Add Room overlay -->
 <div class="modal-overlay" id="addRoomOverlay" hidden>
@@ -174,6 +204,17 @@
     </li>
 </template>
 
+<!-- user-switcher-item template -->
+<template id="user-switcher-item">
+  <li class="user-switcher-item">
+    <button class="user-switcher-btn" data-user-id="">
+      <span class="user-switcher-dot"></span>
+      <span class="user-switcher-name"></span>
+      <span class="user-switcher-role"></span>
+    </button>
+  </li>
+</template>
+
 <!-- room-card template -->
 <template id="room-card">
     <div class="room-card">
@@ -195,14 +236,17 @@
 <!-- models -->
 <script src="/public/js/models/room-model.js"></script>
 <script src="/public/js/models/validation-model.js"></script>
+<script src="/public/js/models/user-model.js"></script>
 
 <!-- views -->
 <script src="/public/js/views/room-view.js"></script>
 <script src="/public/js/views/validation-view.js"></script>
+<script src="/public/js/views/user-view.js"></script>
 
 <!-- controllers -->
 <script src="/public/js/controllers/room-controller.js"></script>
 <script src="/public/js/controllers/validation-controller.js"></script>
+<script src="/public/js/controllers/user-controller.js"></script>
 
 <!-- modules -->
 <script src="/public/js/menu.js"></script>

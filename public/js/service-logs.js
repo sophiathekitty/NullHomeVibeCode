@@ -61,7 +61,7 @@ function renderServiceCards(services) {
             if (lastRun.warn_count > 0) {
                 var warnBadge = document.createElement('span');
                 warnBadge.className = 'badge-warn';
-                warnBadge.textContent = lastRun.warn_count + ' warn' + (lastRun.warn_count !== 1 ? 's' : '');
+                warnBadge.textContent = lastRun.warn_count + ' warning' + (lastRun.warn_count !== 1 ? 's' : '');
                 metaEl.appendChild(warnBadge);
             }
         }
@@ -157,7 +157,7 @@ function renderRunList(runs, serviceId) {
         if (run.warn_count > 0) {
             var warnBadge = document.createElement('span');
             warnBadge.className = 'badge-warn';
-            warnBadge.textContent = run.warn_count + ' warn' + (run.warn_count !== 1 ? 's' : '');
+            warnBadge.textContent = run.warn_count + ' warning' + (run.warn_count !== 1 ? 's' : '');
             badgesEl.appendChild(warnBadge);
         }
 

@@ -56,7 +56,7 @@ class UserSession extends Model
         return [
             [
                 'name'     => 'user_id',
-                'type'     => 'INT',
+                'type'     => 'INT UNSIGNED',
                 'length'   => null,
                 'nullable' => false,
                 'default'  => null,
